@@ -1,0 +1,29 @@
+﻿/* ===== Global Table Scroll ===== */
+.table-scroll {
+    max-height: 400px;
+    overflow-y: auto;
+    border-radius: 6px;
+}
+
+    .table-scroll table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .table-scroll thead th {
+        position: sticky;
+        top: 0;
+        background: #ffffff;
+        z-index: 10;
+        border-bottom: 2px solid #dee2e6;
+    }
+
+/* Scroll mượt */
+.table-scroll {
+    scroll-behavior: smooth;
+}
+
+    /* Hover đẹp */
+    .table-scroll tbody tr:hover {
+        background-color: #f8f9fa;
+    }
