@@ -7,6 +7,6 @@ namespace Project_HotelBooking.Models
         public string Name { get; set; } = null!;
         public string? Description { get; set; }
 
-        public ICollection<RoomAmenity>? RoomAmenities { get; set; }
+        public ICollection<RoomAmenity> RoomAmenities { get; set; } = new List<RoomAmenity>();
     }
 }

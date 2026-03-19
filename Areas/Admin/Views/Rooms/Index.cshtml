@@ -1,0 +1,527 @@
+﻿@using Project_HotelBooking.Enums
+@using Project_HotelBooking.Enums.Helper
+@model IEnumerable<Project_HotelBooking.Application.DTOs.Room.RoomDto>
+
+@{
+    ViewData["Title"] = "Index";
+}
+<style>
+    .action-icon {
+        font-size: 24px;
+        padding: 6px;
+        border-radius: 6px;
+        transition: 0.2s;
+    }
+
+        .action-icon:hover {
+            filter: brightness(70%);
+        }
+
+    /* IsActive*/
+    .switch {
+        position: relative;
+        display: inline-block;
+        width: 55px;
+        height: 28px;
+    }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        inset: 0;
+        background-color: #ccc;
+        border-radius: 30px;
+        transition: 0.3s;
+    }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 22px;
+            width: 22px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            border-radius: 50%;
+            transition: 0.3s;
+        }
+
+    input:checked + .slider {
+        background-color: #7c3aed;
+    }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+    /* CSS IsActive */
+    .status-active {
+        background-color: #e8f7ee;
+        color: #1e7e34;
+        border: 1px solid #28a745;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 500;
+    }
+
+    .status-inactive {
+        background-color: #fdeaea;
+        color: #c82333;
+        border: 1px solid #dc3545;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 500;
+    }
+
+    /* CSS Status */
+    .status-available {
+        background-color: #e8f7ee;
+        color: #1e7e34;
+        border: 1px solid #28a745;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 500;
+    }
+
+    .status-occupied {
+        background-color: #fdeaea;
+        color: #c82333;
+        border: 1px solid #dc3545;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 500;
+    }
+
+    .status-maintenance {
+        background-color: #fff8e1;
+        color: #856404;
+        border: 1px solid #ffc107;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 500;
+    }
+
+    .status-reserved {
+        background-color: #e7f1ff;
+        color: #0d6efd;
+        border: 1px solid #0d6efd;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 500;
+    }
+
+    .status-cleaning {
+        background-color: #e7f6fb;
+        color: #0c5460;
+        border: 1px solid #17a2b8;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 500;
+    }
+    /* SELECT2 */
+    /* Fix Select2 height giống input bootstrap */
+    .select2-container .select2-selection--single {
+        height: 46px !important;
+        padding: 6px 12px;
+        border-radius: 6px;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        line-height: 24px;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 46px;
+    }
+
+    .select2-container .select2-selection--multiple {
+        height: 46px !important;
+        padding: 6px 12px;
+        border-radius: 6px;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        line-height: 24px;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 46px;
+    }
+</style>
+
+<button type="button" class="btn btn-primary me-2" id="btnAddNew">
+    <span class="svg-icon svg-icon svg-icon-1 svg_plus p-0"></span> Thêm mới
+</button>
+<div class="table-scroll mt-2">
+    <table class="table table-bordered">
+        <thead>
+            <tr class="text-center">
+                <th>Số phòng</th>
+                <th>Tầng</th>
+                <th>Loại phòng</th>
+                <th>Trạng thái</th>
+                <th>Tình trạng</th>
+                <th>Hành động</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td class="text-center">@item.RoomNumber</td>
+                    <td class="text-center">@item.FloorName</td>
+                    <td class="text-center">@item.RoomTypeName</td>
+                    <td class="text-center">
+                        <span class ="status status-@item.Status.ToString().ToLower()">
+                            @EnumHelper.GetDisplayName(item.Status)
+                        </span>
+                    </td>
+                    <td class="text-center">
+                        @if (item.IsActive)
+                        {
+                            <span class="status-active">Đang hoạt động</span>
+                        }
+                        else
+                        {
+                            <span class="status-inactive">Dừng hoạt động</span>
+                        }
+                    </td>
+
+
+                    <td class="text-center">
+
+                        <i class="bi bi-pencil-square fs-3 text-warning me-3 action-icon btn-edit"
+                           onclick="openEdit(@item.Id)"
+                           title="Edit"></i>
+
+                        @* <i class="bi bi-eye-fill fs-3 text-info me-3 action-icon btn-detail"
+                           data-id="@item.Id"
+                           title="Details"></i> *@
+
+                        <i class="bi bi-trash fs-3 text-danger action-icon btn-delete"
+                           data-id="@item.Id"
+                           title="Delete"></i>
+
+                    </td>
+                </tr>
+            }
+
+        </tbody>
+    </table>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="roomModal" tabindex="-1" data-bs-backdrop="static" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalTitle"></h5>
+                <i class="bi bi-x-lg" data-bs-dismiss="modal"></i>
+            </div>
+
+            <div class="modal-body">
+
+                <!-- Hidden Id để phân biệt Create / Edit -->
+                <input type="hidden" id="Id" name="Id" />
+
+                <div class="row mb-3">
+
+                    <!-- Tên phòng -->
+                    <div class="col-6">
+                        <label>Số phòng</label>
+                        <input type="text" id="RoomNumber" name="RoomNumber" class="form-control" />
+                    </div>
+
+                    <!-- Tầng -->
+                    <div class="col-6">
+                        <label>Tầng</label>
+                        <select id="FloorId" name="FloorId" class="form-control">
+                        </select>
+                    </div>
+
+                </div>
+
+                <div class="row mb-3">
+
+                    <div class="col-6">
+                        <label>Loại phòng</label>
+                        <select id="RoomTypeId" name="RoomTypeId" class="form-control">
+                        </select>
+                    </div>
+
+                    <div class="col-6">
+                        <label>Tiện nghi</label>
+                        <select id="amenityList" class="form-control" multiple></select>
+                    </div>
+                </div>               
+                    
+                <div class="row mb-3">
+                    <!-- Field Ẩn khi Create -->
+                    <div class="col-6 updateFields" style="display:none">
+                        <label>Trạng thái</label>
+                    <select id="Status" name="Status" class="form-control">
+                            @foreach (RoomStatus status in Enum.GetValues(typeof(RoomStatus)))
+                            {
+                                <option value="@((int)status)">
+                                    @status.GetDisplayName()
+                                </option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="col-6 updateFields" style="display:none">
+                        <label>Hoạt động</label>
+
+                        <label class="switch">
+                            <input type="checkbox"
+                                   id="IsActive"
+                                   name="IsActive"
+                                   value="true">
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" id="btnSave" class="btn btn-primary">Lưu</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JS -->
+@section Scripts {
+    <script>
+            $(document).ready(function () {
+
+            // ===== INIT SELECT2 =====
+            $('#RoomTypeId').select2({
+                dropdownParent: $('#roomModal'),
+                width: '100%',
+                allowClear: true,
+                minimumResultsForSearch: 0
+            });
+            $('#FloorId').select2({
+                dropdownParent: $('#roomModal'),
+                width: '100%',
+                allowClear: true,
+                minimumResultsForSearch: 0
+            });
+
+            // ===== CREATE =====
+            $("#btnAddNew").on("click", function () {
+
+                $("#Id").val(0);
+                $("#RoomNumber").val("");
+                $("#FloorId").val(null).trigger('change');
+                $("#RoomTypeId").val(null).trigger('change');
+
+               $("#Status").val(1).prop("disabled", true);
+
+                loadRoomTypeDropdown();
+                loadFloorDropdown();
+                loadAmenities();
+
+                $('#IsActive').prop('checked', true); // mặc định hoạt động
+
+                $('.updateFields').hide(); // hiện field update
+                $('.updateFields :input').prop('disabled', true); // disable field update
+
+                $("#modalTitle").text("Thêm loại phòng");
+
+                var modal = new bootstrap.Modal(document.getElementById('roomModal'));
+                modal.show();
+            });
+
+            // ===== SAVE =====
+            $("#btnSave").on("click", function () {
+
+                var id = Number($("#Id").val());
+                var amenityIds = $("#amenityList").val() || [];
+                amenityIds = amenityIds.map(Number);
+
+                var payload = {
+                    Id: id,
+                    RoomNumber: $("#RoomNumber").val(),
+                    FloorId: Number($("#FloorId").val()),
+                    RoomTypeId: Number($("#RoomTypeId").val()),
+                    Status: Number($("#Status").val()),
+                    IsActive: $('#IsActive').prop('checked'),
+                    AmenityIds: amenityIds
+                };
+
+                var isUpdate = id > 0;
+
+                $.ajax({
+                    url: isUpdate
+                        ? "/Admin/Rooms/Update"
+                        : "/Admin/Rooms/Create",
+
+                    type: isUpdate ? "PUT" : "POST",
+                    contentType: "application/json",
+                    data: JSON.stringify(payload),
+
+                    success: function (res) {
+
+                        if (res.status === 200) {
+
+                            bootstrap.Modal.getInstance(document.getElementById('roomModal')).hide();
+
+                            Swal.fire({
+                                icon: "success",
+                                title: "Thành công!",
+                                text: isUpdate ? "Cập nhật thành công" : "Thêm thành công"
+                            }).then(() => location.reload());
+                        }
+                        else {
+                            Swal.fire("Lỗi", res.message, "error");
+                        }
+                    },
+                    error: function () {
+                        Swal.fire("Lỗi", "Có lỗi xảy ra", "error");
+                    }
+                });
+            });
+
+        });
+
+               // ===== EDIT =====
+        function openEdit(id) {
+
+            $.get("/Admin/Rooms/GetById/" + id, function (res) {
+
+                $("#Id").val(res.id);
+                $("#RoomNumber").val(res.roomNumber);
+
+                loadRoomTypeDropdown(res.roomTypeId);
+                loadFloorDropdown(res.floorId);
+                loadAmenities(res.amenityIds);
+
+                $("#Status").val(res.status).trigger('change');
+                $('#IsActive').prop('checked', res.isActive);
+
+                $('.updateFields').show();
+                $('.updateFields :input').prop('disabled', false);
+
+                $("#modalTitle").text("Cập nhật phòng");
+
+                var modal = new bootstrap.Modal(document.getElementById('roomModal'));
+                modal.show();
+            });
+        }
+
+        // ===== DELETE =====
+            $(document).on("click", ".btn-delete", function () {
+            var id = $(this).data("id");
+
+            Swal.fire({
+                title: "Bạn chắc chắn?",
+                text: "Không thể hoàn tác!",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonText: "Xóa",
+                cancelButtonText: "Hủy"
+            }).then((result) => {
+
+                if (result.isConfirmed) {
+
+                    $.ajax({
+                        url: "/Admin/Rooms/Delete/",
+                        type: "DELETE",
+                        data : {id : id},
+                        success: function () {
+
+                            Swal.fire("Đã xóa!", "", "success")
+                                .then(() => location.reload());
+                        }
+                    });
+
+                }
+            });
+        });
+
+        // ===== LOAD ROOM TYPE =====
+        function loadRoomTypeDropdown(selectedValue = null) {
+
+            const select = $("#RoomTypeId");
+            select.empty();
+            select.append('<option value="">Chọn loại phòng</option>');
+
+            $.get("/Admin/RoomTypes/GetRoomTypes", function (res) {
+
+                if (res.status === 200 && res.resources) {
+
+                    res.resources.forEach(o => {
+                        select.append(new Option(o.text, o.value));
+                    });
+
+                    if (selectedValue !== null) {
+                        select.val(selectedValue).trigger('change.select2');
+                    }
+                }
+            });
+        }
+        // ===== LOAD FLOOR =====
+        function loadFloorDropdown(selectedValue = null) {
+
+            const select = $("#FloorId");
+            select.empty();
+            select.append('<option value="">Chọn tầng</option>');
+
+            $.get("/Admin/Floors/GetFloors", function (res) {
+
+                if (res.status === 200 && res.resources) {
+
+                    res.resources.forEach(o => {
+                        select.append(new Option(o.text, o.value));
+                    });
+
+                    if (selectedValue !== null) {
+                        select.val(selectedValue).trigger('change.select2');
+                    }
+                }
+            });
+        }
+
+        // ======== LOAD AMENITY ==========
+        function loadAmenities(selectedAmenities = []) {
+
+            const select = $("#amenityList");
+            select.empty();
+
+            $.get("/Admin/Amenities/GetAmenities", function (res) {
+
+                if (res.status === 200 && res.resources) {
+
+                    res.resources.forEach(a => {
+                        select.append(new Option(a.text, a.value));
+                    });
+
+                    if (selectedAmenities.length > 0) {
+                        select.val(selectedAmenities).trigger('change');
+                    }
+                }
+            });
+        }
+        $("#amenityList").select2({
+            width: "100%",
+            placeholder: "Chọn tiện nghi"
+        });
+    </script>
+}

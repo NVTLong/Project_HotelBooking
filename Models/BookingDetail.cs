@@ -1,4 +1,5 @@
 ﻿using Project_HotelBooking.Base;
+using Project_HotelBooking.Enums;
 
 namespace Project_HotelBooking.Models 
 { 
@@ -13,7 +14,8 @@ namespace Project_HotelBooking.Models
         public decimal PricePerNight { get; set; }
         public int NumberOfNights { get; set; }
         public int NumberOfGuests { get; set; }
-
         public decimal SubTotal { get; set; }
+        public ICollection<BookingHotelService> BookingHotelServices { get; set; }
+
     }
 }

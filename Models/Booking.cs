@@ -21,10 +21,10 @@ namespace Project_HotelBooking.Models
 
         public string? Note { get; set; }
         public DateTime? CancelledAt { get; set; }
+        public Payment? Payment { get; set; }
 
         public ICollection<BookingDetail>? BookingDetails { get; set; }
-        public Payment? Payment { get; set; }
-        public ICollection<BookingService>? BookingServices { get; set; }
+        public ICollection<BookingHotelService>? BookingServices { get; set; }
         public ICollection<Payment>? Payments { get; set; }
     }
 }

@@ -1,0 +1,605 @@
+﻿@using Project_HotelBooking.Enums
+@model IEnumerable<Project_HotelBooking.Application.DTOs.BookingDetail.BookingDetailDto>
+
+@{
+    ViewData["Title"] = "Booking Detail";
+}
+@{
+    var status = (BookingStatus)ViewBag.Status;
+}
+<style>
+    .action-icon {
+        font-size: 24px;
+        padding: 6px;
+        border-radius: 6px;
+        transition: 0.2s;
+    }
+
+        .action-icon:hover {
+            filter: brightness(70%);
+        }
+    /* SELECT2 */
+    /* Fix Select2 height giống input bootstrap */
+    #addServiceModal .select2-container .select2-selection--single {
+        height: 46px !important;
+        padding: 6px 12px;
+        border: 1px solid #ced4da;
+        border-radius: 6px;
+    }
+
+    #addServiceModal .select2-container--default .select2-selection--single .select2-selection__rendered {
+        line-height: 33px;
+    }
+
+    #addServiceModal .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 45px;
+        position: absolute;
+        top: 1px;
+        right: 10px;
+        width: 27px;
+    }
+</style>
+
+<div class="container">
+    <a asp-area="Admin"
+       asp-controller="Bookings"
+       asp-action="Index"
+       class="me-2 text-dark">
+
+        <i class="bi bi-arrow-left fs-4"></i>
+        Trở lại
+    </a>
+
+    <!-- Booking Info -->
+    <div class="card mb-4">
+        <div class="card-header ">
+            <h4>Thông tin Booking</h4>
+
+        </div>
+
+        <div class="card-body">
+
+            <div class="row">
+
+                <div class="col-md-3">
+                    <strong>Mã Booking:</strong>
+                    @ViewBag.BookingCode
+                </div>
+
+                <div class="col-md-3">
+                    <strong>Khách hàng:</strong>
+                    @ViewBag.CustomerName
+                </div>
+
+                <div class="col-md-3">
+                    <strong>Check In:</strong>
+                    @(((DateTime)ViewBag.CheckIn).ToString("dd/MM/yyyy"))
+                </div>
+
+                <div class="col-md-3">
+                    <strong>Check Out:</strong>
+                    @(((DateTime)ViewBag.CheckOut).ToString("dd/MM/yyyy"))
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Button -->
+    @if (status != BookingStatus.CheckedOut)
+    {
+        <button class="btn btn-primary mb-3 mr-3" id="btnAddRoom">
+            Thêm phòng
+        </button>
+        @if(status == BookingStatus.CheckedIn){
+        <button class="btn btn-primary mb-3"
+                onclick="checkoutBooking(@ViewBag.BookingId)">
+            CheckOut
+        </button>
+        }
+    }
+
+    <!-- Table -->
+    <div class="table-responsive">
+        <table class="table table-bordered">
+
+            <thead class="text-center">
+
+                <tr>
+                    <th>Phòng</th>
+                    <th>Giá / đêm</th>
+                    <th>Số đêm</th>
+                    <th>Số khách</th>
+                    <th>Thành tiền</th>
+                    @if (status != BookingStatus.CheckedOut)
+                    {
+                        <th>Hành động</th>
+                    }
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                @foreach (var item in Model)
+                {
+                    <tr class="text-center">
+
+                        <td>@item.RoomNumber</td>
+
+                        <td>@item.PricePerNight.ToString("N0")</td>
+
+                        <td>@item.NumberOfNights</td>
+
+                        <td>@item.NumberOfGuests</td>
+
+                        <td>@item.SubTotal.ToString("N0")</td>
+                        @if (status != BookingStatus.CheckedOut)
+                        {
+                        <td class="text-center">
+
+                            <!-- Thêm dịch vụ -->
+                            <i class="bi bi-plus-circle fs-4 text-success me-3 action-icon"
+                               onclick="openAddService(@item.Id)"
+                               title="Thêm dịch vụ"></i>
+
+                        </td>
+                        }
+                    </tr>
+                }
+
+            </tbody>
+
+        </table>
+    </div>
+
+    <h5 class="mt-4">Danh sách dịch vụ</h5>
+    <div class="table-responsive">
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Dịch vụ</th>
+                    <th>Số lượng</th>
+                    <th>Giá tiền</th>
+                    <th>Tổng</th>
+                    @if (status != BookingStatus.CheckedOut)
+                    {
+                        <th>Hành động</th>
+                    }
+                </tr>
+            </thead>
+
+            <tbody id="serviceTable">
+                @foreach (var detail in Model)
+                {
+                    if (detail.HotelServices != null)
+                    {
+                        foreach (var s in detail.HotelServices)
+                        {
+                            <tr>
+                                <td>@s.ServiceName</td>
+                                <td class="qty">@s.Quantity</td>
+                                <td>@s.Price.ToString("N0")</td>
+                                <td class="subTotal">@((s.Quantity * s.Price).ToString("N0"))</td>
+                                @if (status != BookingStatus.CheckedOut)
+                                {
+                                <td class="text-center">
+
+                                    <i class="bi bi-pencil-square fs-3 text-warning me-3 action-icon btn-edit"
+                                       onclick="openEdit(@s.Id)"
+                                       title="Edit"></i>
+
+                                    <i class="bi bi-trash fs-3 text-danger action-icon btn-delete"
+                                       data-id="@s.Id"
+                                       title="Delete"></i>
+
+                                </td>
+                                }
+                            </tr>
+                        }
+                    }
+                }
+            </tbody>
+
+
+
+        </table>
+    </div>
+</div>
+
+<!-- Modal Add Room -->
+<div class="modal fade" id="bookingDetailModal" tabindex="-1">
+
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5>Thêm phòng</h5>
+                <i class="bi bi-x-lg" data-bs-dismiss="modal"></i>
+            </div>
+
+            <div class="modal-body">
+
+                <input type="hidden" id="BookingId" value="@ViewBag.BookingId" />
+
+                <div class="row mb-3">
+
+                    <div class="col-md-6">
+
+                        <label>Room Type</label>
+                        <select id="RoomTypeId" class="form-control">
+                            <option value="">-- Chọn loại phòng --</option>
+                        </select>
+
+                    </div>
+
+                    <div class="col-md-6">
+
+                        <label>Room</label>
+                        <select id="RoomId" class="form-control">
+                            <option value="">-- Chọn phòng --</option>
+                        </select>
+
+                    </div>
+
+                </div>
+
+                <div class="row mb-3">
+
+                    <div class="col-md-6">
+
+                        <label>Số đêm</label>
+                        <input type="number" id="NumberOfNights" class="form-control">
+
+                    </div>
+
+                    <div class="col-md-6">
+
+                        <label>Số khách</label>
+                        <input type="number" id="NumberOfGuests" class="form-control">
+
+                    </div>
+
+                </div>
+
+                <div class="row mb-3">
+
+                    <div class="col-md-6">
+
+                        <label>Giá / đêm</label>
+                        <input type="number" id="PricePerNight" class="form-control" readonly>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="modal-footer">
+
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button class="btn btn-primary" id="btnSave">Lưu</button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<div class="modal fade" id="addServiceModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5>Thêm dịch vụ</h5>
+                <i class="bi bi-x-lg" data-bs-dismiss="modal"></i>
+            </div>
+
+            <div class="modal-body">
+
+                <input type="hidden" id="BookingDetailId" />
+
+                <div class="mb-3">
+                    <label>Tìm dịch vụ</label>
+                    <select id="serviceSelect" style="width:100%" class="form-control"></select>
+                </div>
+
+                <div id="selectedServices"></div>
+
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button class="btn btn-success" onclick="saveMultipleService()">Thêm</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+
+
+@section Scripts {
+    <script>
+
+        let currentBookingDetailId = 0;
+
+        // ================= ROOM =================
+        $("#btnAddRoom").click(function () {
+            loadRoomTypes();
+            var modal = new bootstrap.Modal(document.getElementById('bookingDetailModal'));
+            modal.show();
+        });
+
+        function loadRoomTypes() {
+            $.get("/Admin/Rooms/GetRoomTypes", function (res) {
+                var select = $("#RoomTypeId");
+                select.empty();
+                select.append(new Option("-- Chọn loại phòng --", ""));
+
+                res.resources.forEach(r => {
+                    select.append(new Option(r.text, r.value));
+                });
+            });
+        }
+
+        $("#RoomTypeId").change(function () {
+            var roomTypeId = $(this).val();
+
+            if (!roomTypeId) {
+                $("#RoomId").empty().append(new Option("-- Chọn phòng --", ""));
+                return;
+            }
+
+            loadRooms(roomTypeId);
+        });
+
+        function loadRooms(roomTypeId) {
+            $.get("/Admin/Rooms/GetAvailableRoomsByType",
+                { roomTypeId: roomTypeId },
+                function (res) {
+
+                    var select = $("#RoomId");
+                    select.empty().append(new Option("-- Chọn phòng --", ""));
+
+                    res.resources.forEach(r => {
+                        var option = new Option(
+                            r.text + " - " + r.price.toLocaleString() + " VND",
+                            r.value
+                        );
+
+                        $(option).attr("data-price", r.price);
+                        select.append(option);
+                    });
+                });
+        }
+
+        $("#RoomId").change(function () {
+            var price = $(this).find(":selected").data("price");
+            $("#PricePerNight").val(price || "");
+        });
+
+        $("#btnSave").click(function () {
+
+            var payload = {
+                BookingId: $("#BookingId").val(),
+                RoomId: $("#RoomId").val(),
+                PricePerNight: $("#PricePerNight").val(),
+                NumberOfNights: $("#NumberOfNights").val(),
+                NumberOfGuests: $("#NumberOfGuests").val()
+            };
+
+            $.ajax({
+                url: "/Admin/BookingDetails/Create",
+                type: "POST",
+                contentType: "application/json",
+                data: JSON.stringify(payload),
+                success: function () {
+                    location.reload();
+                }
+            });
+        });
+
+        // ================= SERVICE =================
+
+        let selectedServices = [];
+
+        // ================= OPEN MODAL =================
+        function openAddService(bookingDetailId) {
+            currentBookingDetailId = bookingDetailId;
+
+            $('#BookingDetailId').val(bookingDetailId);
+
+            selectedServices = [];
+            renderSelectedServices();
+
+            var modal = new bootstrap.Modal(document.getElementById('addServiceModal'));
+            modal.show();
+        }
+
+        // ================= SELECT2 =================
+        $('#serviceSelect').select2({
+            placeholder: "Tìm dịch vụ...",
+            dropdownParent: $('#addServiceModal'),
+            ajax: {
+                url: '/Admin/BookingHotelService/GetAll',
+                dataType: 'json',
+                delay: 250,
+
+                processResults: function (res) {
+                    return {
+                        results: res.resources.map(s => ({
+                            id: s.value,
+                            text: s.text + " (" + s.unit + ")",
+                            price: s.price,
+                            unit: s.unit,
+                            isOneTime: s.isOneTime
+                        }))
+                    };
+                }
+            }
+        });
+
+        // ================= CHỌN SERVICE =================
+        $('#serviceSelect').on('select2:select', function (e) {
+
+            let data = e.params.data;
+
+            let exist = selectedServices.find(x => x.serviceId == data.id);
+
+            if (exist) {
+
+                if (exist.isOneTime) {
+                    alert("Dịch vụ này chỉ chọn 1 lần");
+                    return;
+                }
+
+                exist.quantity += 1;
+
+            } else {
+
+                selectedServices.push({
+                    serviceId: data.id,
+                    name: data.text,
+                    price: data.price,
+                    quantity: 1,
+                    isOneTime: data.isOneTime,
+                    unit: data.unit
+                });
+            }
+
+            renderSelectedServices();
+
+            $('#serviceSelect').val(null).trigger('change');
+        });
+
+        // ================= RENDER =================
+        function renderSelectedServices() {
+
+            let html = "";
+
+            selectedServices.forEach(s => {
+
+                html += `
+                    <div class="d-flex justify-content-between align-items-center mb-2 border p-2 rounded">
+
+                        <div>
+                            <strong>${s.name}</strong><br/>
+                            <small>${s.price.toLocaleString()} VND</small>
+                        </div>
+
+                        <div class="d-flex align-items-center">
+
+                            <button class="btn btn-sm btn-danger"
+                                onclick="changeQty(${s.serviceId}, -1)">-</button>
+
+                            <input type="text"
+                                value="${s.quantity}"
+                                class="form-control mx-2 text-center"
+                                style="width:50px"
+                                readonly />
+
+                            <button class="btn btn-sm btn-success"
+                                onclick="changeQty(${s.serviceId}, 1)"
+                                ${s.isOneTime ? 'disabled' : ''}>
+                                +
+                            </button>
+
+                            <button class="btn btn-sm btn-outline-danger ms-2"
+                                onclick="removeService(${s.serviceId})">
+                                ✕
+                            </button>
+
+                        </div>
+
+                    </div>
+                `;
+            });
+
+            $("#selectedServices").html(html);
+        }
+
+        // ================= CHANGE QTY =================
+        function changeQty(serviceId, delta) {
+
+            let item = selectedServices.find(x => x.serviceId == serviceId);
+
+            if (!item) return;
+
+            if (item.isOneTime && delta > 0) return;
+
+            item.quantity += delta;
+
+            if (item.quantity <= 0) {
+                selectedServices = selectedServices.filter(x => x.serviceId != serviceId);
+            }
+
+            renderSelectedServices();
+        }
+
+        // ================= REMOVE =================
+        function removeService(serviceId) {
+            selectedServices = selectedServices.filter(x => x.serviceId != serviceId);
+            renderSelectedServices();
+        }
+
+        // ================= SAVE =================
+        function saveMultipleService() {
+
+            if (selectedServices.length === 0) {
+                alert("Vui lòng chọn dịch vụ");
+                return;
+            }
+
+            $.ajax({
+                url: '/Admin/BookingHotelService/CreateMultiple',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    bookingDetailId: currentBookingDetailId,
+                    items: selectedServices
+                }),
+                success: function (res) {
+
+                    if (res.status == 200) {
+
+                        alert("Thêm dịch vụ thành công");
+
+                        $('#addServiceModal').modal('hide');
+
+                        selectedServices = [];
+
+                        location.reload();
+                    }
+                }
+            });
+        }
+
+        function checkoutBooking(bookingId) {
+
+            if (!confirm("Bạn có chắc muốn checkout toàn bộ booking này không?")) return;
+
+            $.post('/Admin/Bookings/CheckOut', { id: bookingId }, function (res) {
+
+                if (res.success) {
+
+                    alert(res.message);
+
+                    location.reload(); // 👈 reload để ẩn nút
+
+                } else {
+                    alert(res.message);
+                }
+
+            });
+        }
+
+
+    </script>
+}

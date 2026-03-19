@@ -20,7 +20,5 @@ namespace Project_HotelBooking.Models
         public ICollection<RoomImage>? RoomImages { get; set; }
         public ICollection<BookingDetail>? BookingDetails { get; set; }
         public ICollection<RoomAmenity>? RoomAmenities { get; set; }
-
     }
-
 }

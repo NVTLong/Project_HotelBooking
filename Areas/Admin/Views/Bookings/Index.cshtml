@@ -1,0 +1,600 @@
+﻿@using Project_HotelBooking.Enums
+@using Project_HotelBooking.Enums.Helper
+@model IEnumerable<Project_HotelBooking.Application.DTOs.Booking.BookingDto>
+
+@{
+    ViewData["Title"] = "Index";
+}
+<style>
+    .action-icon {
+        font-size: 24px;
+        padding: 6px;
+        border-radius: 6px;
+        transition: 0.2s;
+    }
+
+        .action-icon:hover {
+            filter: brightness(70%);
+        }
+
+    /* IsActive*/
+    .switch {
+        position: relative;
+        display: inline-block;
+        width: 55px;
+        height: 28px;
+    }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        inset: 0;
+        background-color: #ccc;
+        border-radius: 30px;
+        transition: 0.3s;
+    }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 22px;
+            width: 22px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            border-radius: 50%;
+            transition: 0.3s;
+        }
+
+    input:checked + .slider {
+        background-color: #7c3aed;
+    }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+    /* CSS IsActive */
+    .status-active {
+        background-color: #e8f7ee;
+        color: #1e7e34;
+        border: 1px solid #28a745;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 500;
+    }
+
+    .status-inactive {
+        background-color: #fdeaea;
+        color: #c82333;
+        border: 1px solid #dc3545;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 500;
+    }
+
+    /* CSS Status */
+    /* Pending */
+    .status-pending {
+        background-color: #fff8e1;
+        color: #856404;
+        border: 1px solid #ffc107;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 500;
+    }
+
+    /* Confirmed */
+    .status-confirmed {
+        background-color: #e7f6fb;
+        color: #0c5460;
+        border: 1px solid #17a2b8;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 500;
+    }
+
+    /* Checked In */
+    .status-checkedin {
+        background-color: #e8f7ee;
+        color: #1e7e34;
+        border: 1px solid #28a745;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 500;
+    }
+
+    /* Checked Out */
+    .status-checkedout {
+        background-color: #f1f3f5;
+        color: #495057;
+        border: 1px solid #adb5bd;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 500;
+    }
+
+    /* Cancelled */
+    .status-cancelled {
+        background-color: #fdeaea;
+        color: #c82333;
+        border: 1px solid #dc3545;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 500;
+    }
+
+    /* SELECT2 */
+    /* Fix Select2 height giống input bootstrap */
+    .select2-container .select2-selection--single {
+        height: 46px !important;
+        padding: 6px 12px;
+        border-radius: 6px;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        line-height: 24px;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 46px;
+    }
+
+    .select2-container .select2-selection--multiple {
+        height: 46px !important;
+        padding: 6px 12px;
+        border-radius: 6px;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        line-height: 24px;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 46px;
+    }
+</style>
+
+<button type="button" class="btn btn-primary me-2" id="btnAddNew">
+    <span class="svg-icon svg-icon svg-icon-1 svg_plus p-0"></span> Thêm mới
+</button>
+<div class="table-scroll mt-2">
+    <table class="table table-bordered">
+        <thead>
+            <tr class="text-center">
+                <th>Mã Booking</th>
+                <th>Khách hàng</th>
+                <th>Check In</th>
+                <th>Check Out</th>
+                <th>Số khách</th>
+                <th>Trạng thái</th>
+                <th>Ghi chú</th>
+                <th>Hành động</th>
+            </tr>
+        </thead>
+        <tbody>
+
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td class="text-center">@item.BookingCode</td>
+                    <td class="text-center">@item.CustomerName</td>
+                    <td class="text-center">@item.CheckInDate.ToString("dd/MM/yyyy")</td>
+                    <td class="text-center">@item.CheckOutDate.ToString("dd/MM/yyyy")</td>
+                    <td class="text-center">@item.TotalGuests</td>
+                    <td class="text-center">
+                        <span class="status status-@item.Status.ToString().ToLower()">
+                            @EnumHelper.GetDisplayName(item.Status)
+                        </span>
+                    </td>
+                    <td class="text-center">@item.Note</td>
+
+                    <td class="text-center">
+
+                        <!-- Detail luôn có -->
+                        <i class="bi bi-list fs-3 text-info me-3 action-icon"
+                           onclick="openDetail(@item.Id)"
+                           title="Detail"></i>
+
+
+                        @* Pending *@
+                        @if ((int)item.Status == 1)
+                        {
+                            <!-- Edit -->
+                            <i class="bi bi-pencil-square fs-3 text-warning me-3 action-icon"
+                               onclick="openEdit(@item.Id)"
+                               title="Edit"></i>
+
+                            <!-- Confirm -->
+                            <i class="bi bi-check-circle fs-3 text-primary me-3 action-icon"
+                               onclick="confirmBooking(@item.Id)"
+                               title="Confirm"></i>
+
+                            <!-- Cancel -->
+                            <i class="bi bi-x-circle fs-3 text-danger action-icon"
+                               onclick="cancelBooking(@item.Id)"
+                               title="Cancel"></i>
+                        }
+
+
+                        @* Confirmed *@
+                        @if ((int)item.Status == 2)
+                        {
+                            @* Nếu chưa có phòng *@
+                            if (item.RoomCount == 0)
+                            {
+                                <!-- Add Room -->
+                                <i class="bi bi-plus-circle fs-3 text-primary me-3 action-icon"
+                                   onclick="openDetail(@item.Id)"
+                                   title="Add Room"></i>
+                            }
+                            else
+                            {
+                                <!-- Check In -->
+                                <i class="bi bi-door-open fs-3 text-success me-3 action-icon"
+                                   onclick="checkIn(@item.Id)"
+                                   title="Check In"></i>
+                            }
+
+                            <!-- Cancel -->
+                            <i class="bi bi-x-circle fs-3 text-danger action-icon"
+                               onclick="cancelBooking(@item.Id)"
+                               title="Cancel"></i>
+                        }
+
+
+                        @* Checked In *@
+                        @if ((int)item.Status == 3)
+                        {
+                            <!-- Check Out -->
+                            <i class="bi bi-box-arrow-right fs-3 text-secondary action-icon"
+                               onclick="checkOut(@item.Id)"
+                               title="Check Out"></i>
+                        }
+
+                    </td>
+
+
+                </tr>
+            }
+
+        </tbody>
+    </table>
+</div>
+
+
+<!-- Modal -->
+<div class="modal fade" id="bookingModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 id="modalTitle"></h5>
+                
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+
+                <input type="hidden" id="Id" />
+                <div class="row mb-3">
+                    <div class="col-6">
+                        <button type="button"
+                                class="btn btn-sm btn-primary mt-2"
+                                data-bs-toggle="modal"
+                                data-bs-target="#createCustomerModal">
+                            + Add New Customer
+                        </button>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+
+                    <div class="col-6">
+                        <label>Khách hàng</label>
+                        <select id="CustomerId" class="form-control"></select>
+                    </div>
+
+                    <div class="col-6">
+                        <label>Số khách</label>
+                        <input type="number" id="TotalGuests" class="form-control">
+                    </div>
+
+                </div>
+
+                <div class="row mb-3">
+
+                    <div class="col-6">
+                        <label>Check In</label>
+                        <input type="date" id="CheckInDate" class="form-control">
+                    </div>
+
+                    <div class="col-6">
+                        <label>Check Out</label>
+                        <input type="date" id="CheckOutDate" class="form-control">
+                    </div>
+
+                </div>
+
+                <div class="row mb-3">
+
+                    <div class="col-12">
+                        <label>Ghi chú</label>
+                        <textarea id="Note" class="form-control"></textarea>
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">                  
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button class="btn btn-primary" id="btnSave">Lưu</button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="checkInModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title">Xác nhận Check-In</h5>
+            </div>
+
+            <div class="modal-body">
+                Bạn có chắc muốn check-in booking này không?
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button class="btn btn-success" onclick="confirmCheckIn()">Check In</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+<!-- JS -->
+@section Scripts {
+    <script>
+            $(document).ready(function () {
+            // ===== CREATE =====
+            $("#btnAddNew").on("click", function () {
+
+                $("#Id").val(0);
+                $("#TotalGuests").val("");
+                $("#CheckInDate").val("");
+                $("#CheckOutDate").val("");
+                $("#Note").val("");
+
+                loadCustomers();
+
+                $("#modalTitle").text("Tạo Booking");
+
+            var modal = new bootstrap.Modal(document.getElementById('bookingModal'));
+            modal.show();
+            });
+
+            // ===== SAVE =====
+            $("#btnSave").on("click", function () {
+
+                var id = Number($("#Id").val());
+
+                var payload = {
+
+                    Id: id,
+                    CustomerId: $("#CustomerId").val(),
+                    CheckInDate: $("#CheckInDate").val(),
+                    CheckOutDate: $("#CheckOutDate").val(),
+                    TotalGuests: $("#TotalGuests").val(),
+                    Note: $("#Note").val()
+                };
+
+                var isUpdate = id > 0;
+
+                $.ajax({
+                    url: isUpdate
+                        ? "/Admin/Bookings/Update"
+                        : "/Admin/Bookings/Create",
+
+                    type: isUpdate ? "PUT" : "POST",
+                    contentType: "application/json",
+                    data: JSON.stringify(payload),
+
+                    success: function (res) {
+
+                        if (res.status === 200) {
+
+                            bootstrap.Modal.getInstance(document.getElementById('bookingModal')).hide();
+
+                            Swal.fire({
+                                icon: "success",
+                                title: "Thành công!",
+                                text: isUpdate ? "Cập nhật thành công" : "Thêm thành công"
+                            }).then(() => location.reload());
+                        }
+                        else {
+                            Swal.fire("Lỗi", res.message, "error");
+                        }
+                    },
+                    error: function () {
+                        Swal.fire("Lỗi", "Có lỗi xảy ra", "error");
+                    }
+                });
+            });
+
+        });
+
+               // ===== EDIT =====
+        function openEdit(id) {
+
+            $.get("/Admin/Bookings/GetById/" + id, function (res) {
+
+                $("#Id").val(res.id);
+
+                $("#CheckInDate").val(res.checkInDate.split("T")[0]);
+                $("#CheckOutDate").val(res.checkOutDate.split("T")[0]);
+
+                $("#TotalGuests").val(res.totalGuests);
+                $("#Note").val(res.note);
+
+                loadCustomers(res.customerId);
+
+                $("#modalTitle").text("Cập nhật Booking");
+
+            var modal = new bootstrap.Modal(document.getElementById('bookingModal'));
+            modal.show();
+            });
+        }
+
+        // ===== DETAIL =====
+                function openDetail(id) {
+
+            window.location.href = "/Admin/BookingDetails/Index?bookingId=" + id;
+
+        }
+
+
+        // ===== DELETE =====
+            $(document).on("click", ".btn-delete", function () {
+            var id = $(this).data("id");
+
+            Swal.fire({
+                title: "Bạn chắc chắn?",
+                text: "Không thể hoàn tác!",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonText: "Xóa",
+                cancelButtonText: "Hủy"
+            }).then((result) => {
+
+                if (result.isConfirmed) {
+
+                    $.ajax({
+                        url: "/Admin/Bookings/Delete/",
+                        type: "DELETE",
+                        data : {id : id},
+                        success: function () {
+
+                            Swal.fire("Đã xóa!", "", "success")
+                                .then(() => location.reload());
+                        }
+                    });
+
+                }
+            });
+        });
+
+        // ================ LOAD CUSTOMER =================
+                function loadCustomers(selectedValue = null) {
+
+            const select = $("#CustomerId");
+
+            select.empty();
+            select.append('<option value="">Chọn khách hàng</option>');
+
+            $.get("/Admin/Customers/GetCustomers", function (res) {
+
+                if (res.status === 200) {
+
+                    res.resources.forEach(c => {
+                        select.append(new Option(c.text, c.value));
+                    });
+
+                    if (selectedValue != null)
+                        select.val(selectedValue);
+                }
+            });
+        }
+
+        // ================= checkIn =======================
+                      let bookingId = 0;
+
+        function checkIn(id) {
+            bookingId = id;
+            $("#checkInModal").modal("show");
+        }
+
+        function confirmCheckIn() {
+
+            $.ajax({
+                url: "/Admin/Bookings/CheckIn/" + bookingId,
+                type: "POST",
+                success: function (data) {
+
+                    if (data.success) {
+
+                        alert(data.message);
+
+                        // chuyển sang trang detail
+                       window.location.href = "/Admin/BookingDetails/Index?bookingId=" + bookingId;
+
+                    } else {
+                        alert("Check-in thất bại");
+                    }
+                },
+                error: function () {
+                    alert("Có lỗi xảy ra");
+                }
+            });
+
+        }
+        // ================== Confimed ===================
+                function confirmBooking(id) {
+
+            if (!confirm("Xác nhận booking này?")) return;
+
+            $.post("/Admin/Bookings/Confirm/" + id, function (res) {
+
+                if (res.success) {
+                    alert(res.message);
+                    location.reload();
+                }
+
+            });
+
+        }
+
+                 function checkOut(id) {
+
+            if (!confirm("Bạn có chắc muốn checkout toàn bộ booking này không?")) return;
+
+                    $.post('/Admin/Bookings/CheckOut', { id: id }, function (res) {
+
+            if (res.success) { // 🔥 sửa ở đây
+
+                Swal.fire({
+                    icon: "success",
+                    title: "Thành công",
+                    text: res.message
+                }).then(() => location.reload());
+
+            } else {
+
+                Swal.fire("Lỗi", res.message, "error");
+
+            }
+
+        });
+
+        }
+
+
+    </script>
+}

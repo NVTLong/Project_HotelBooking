@@ -1,0 +1,431 @@
+﻿@using Project_HotelBooking.Enums
+@using Project_HotelBooking.ViewModels.Staff
+@model StaffPageVM
+@{
+    ViewData["Title"] = "Quản lý nhân viên";
+}
+
+<h2>Danh sách nhân viên</h2>
+
+<button class="btn btn-primary mb-3" onclick="openCreateModal()">
+    Thêm nhân viên
+</button>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Mã nhân viên</th>
+            <th>Chức vụ</th>
+            <th>Họ tên</th>
+            <th>Email</th>
+            @*             <th>Thời gian tạo</th> *@
+            <th>Trạng thái</th>
+            <th>Thao tác</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.Staffs)
+        {
+            <tr>
+                <td>@item.EmployeeCode</td>
+                <td>@item.Role</td>
+                <td>@item.FullName</td>
+                <td>@item.Email</td>
+                @* <td>@item.CreateAt</td> *@
+                <td>
+                    @(item.IsActive ? "Hoạt động" : "Ngưng")
+                </td>
+
+                <td class="text-center">
+
+                    <i class="bi bi-pencil-square fs-3 text-warning me-3 action-icon btn-edit"
+                       onclick="openEditModal(@item.Id)"
+                       title="Edit"></i>
+
+                    @* <i class="bi bi-eye-fill fs-3 text-info me-3 action-icon btn-detail"
+                       data-id="@item.Id"
+                       title="Details"></i> *@
+
+                    <i class="bi bi-trash fs-3 text-danger action-icon btn-delete"
+                       onclick="deleteStaff(@item.Id)"
+                       title="Delete"></i>
+
+                    <i class="bi bi-key fs-3 text-primary action-icon"
+                       onclick="resetPassword(@item.Id)"
+                       title="Reset Password"></i>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<!-- ================== MODAL ================== -->
+
+<div class="modal fade" id="employeeModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+
+            <form id="employeeForm">
+
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalTitle"></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+
+                    <input type="hidden" id="Id" name="Id" />
+
+                    <!-- Fields chỉ hiện khi UPDATE -->
+                    <div id="updateFields" style="display:none">
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">UserName</label>
+                                <input type="text" class="form-control"
+                                       name="UserName" id="UserName">
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">PhoneNumber</label>
+                                <input type="text" class="form-control"
+                                       name="PhoneNumber" id="PhoneNumber">
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Address</label>
+                                <input type="text" class="form-control"
+                                       name="Address" id="Address">
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Date Of Birth</label>
+                                <input type="date" class="form-control"
+                                       name="DateOfBirth" id="DateOfBirth">
+                            </div>
+                        </div>
+
+                        <hr />
+
+                    </div>
+
+
+                    <!-- CREATE + UPDATE -->
+
+                    <div class="row mb-3">
+
+                        <div class="col-md-6">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-control"
+                                   name="Email" id="Email">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Họ tên</label>
+                            <input type="text" class="form-control"
+                                   name="FullName" id="FullName">
+                        </div>
+
+                    </div>
+
+
+                    <div class="row mb-3">
+
+                        <div class="col-md-6">
+                            <label class="form-label">Ngày vào làm</label>
+                            <input type="date" class="form-control"
+                                   name="StartWorkingDate"
+                                   id="StartWorkingDate">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Role</label>
+
+                            <select name="Role"
+                                    id="Role"
+                                    class="form-control">
+
+                                @foreach (UserRole role in Enum.GetValues(typeof(UserRole)))
+                                {
+                                    <option value="@((int)role)">@role</option>
+                                }
+
+                            </select>
+
+                        </div>
+
+                    </div>
+
+                    <div class="row mb-3">
+
+                        <div class="col-md-6">
+                            <label class="form-label d-block">Hoạt động</label>
+
+                            <label class="switch">
+                                <input type="checkbox"
+                                       id="IsActive"
+                                       name="IsActive"
+                                       value="true">
+                                <span class="slider round"></span>
+                            </label>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+
+                    <button type="button"
+                            class="btn btn-secondary"
+                            data-bs-dismiss="modal">
+                        Hủy
+                    </button>
+
+                    <button type="submit"
+                            class="btn btn-success">
+                        Lưu
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+</div>
+
+<!-- JS -->
+@section Scripts {
+
+    <script>
+        function openCreateModal() {
+            $('#employeeForm')[0].reset();
+            $('#Id').val('');
+
+            $('#IsActive').prop('checked', true); // mặc định hoạt động
+
+            $('#updateFields').hide(); // hiện field update
+            $('#updateFields :input').prop('disabled', true); // disable field update
+
+            $('#modalTitle').text('Thêm nhân viên');
+            $('#employeeModal').modal('show');
+        }
+
+        function openEditModal(id) {
+
+            $.get("/Admin/Staff/GetStaff", { id: id }, function (res) {
+                if (res.success) {
+
+                    let data = res.data;
+
+                    $('#Id').val(data.id);
+                    $('#PhoneNumber').val(data.phoneNumber);
+                    $('#Address').val(data.address);
+                    $('#DateOfBirth').val(
+                        data.dateOfBirth?.substring(0, 10)
+                    );
+                    $('#Email').val(data.email);
+                    $('#FullName').val(data.fullName);
+                    $('#StartWorkingDate').val(
+                        data.startWorkingDate?.substring(0, 10)
+                    );
+                    $('#Role').val(data.role);
+                    $('#IsActive').prop('checked', data.isActive);
+
+                    $('#updateFields').show(); // hiện field update
+                    $('#updateFields :input').prop('disabled', false); // enable lại
+
+                    $('#modalTitle').text('Cập nhật nhân viên');
+                    $('#employeeModal').modal('show');
+                }
+            });
+        }
+
+                $('#employeeForm').submit(function (e) {
+            e.preventDefault();
+
+            $.ajax({
+                url: '/Admin/Staff/SaveStaff',
+                type: 'POST',
+                data: $(this).serialize(),
+                success: function (res) {
+
+                    if (res.success) {
+
+                        if (res.tempPassword) {
+
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Tạo thành công!',
+                                html:
+                                    '<b>Tài khoản:</b> <span id="username">' + res.username + '</span><br>' +
+                                    '<b>Mật khẩu:</b> <span id="password">' + res.tempPassword + '</span>' +
+                                    '<br><br><button class="btn btn-success" onclick="copyInfo()">Copy</button>',
+                                 showConfirmButton: false,   // ❌ bỏ nút OK
+                                 allowOutsideClick: false,   // ❌ không cho click ra ngoài tắt
+                                 allowEscapeKey: false       // ❌ không cho bấm ESC tắt
+                            });
+
+                        } else {
+
+                            Swal.fire('Thành công', res.message, 'success')
+                                .then(() => location.reload());
+                        }
+
+                    } else {
+                        Swal.fire('Lỗi', res.message, 'error');
+                    }
+                }
+            });
+        });
+
+        function copyInfo() {
+
+            const text =
+                "Tài khoản: " + document.getElementById("username").innerText +
+                "\nMật khẩu: " + document.getElementById("password").innerText;
+
+            navigator.clipboard.writeText(text);
+
+            Swal.fire('Đã copy!', '', 'success').then(() => location.reload());
+        }
+
+        function deleteStaff(id) {
+
+            Swal.fire({
+                title: 'Bạn chắc chắn?',
+                text: "Nhân viên sẽ bị xóa!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Xóa',
+                cancelButtonText: 'Hủy'
+            }).then((result) => {
+
+                if (result.isConfirmed) {
+
+                    $.post('/Admin/Staff/DeleteStaff', { id: id }, function (res) {
+
+                        if (res.success) {
+
+                            Swal.fire('Đã xóa!', res.message, 'success')
+                                .then(() => location.reload());
+
+                        } else {
+
+                            Swal.fire('Lỗi', res.message, 'error');
+
+                        }
+
+                    });
+
+                }
+
+            });
+        }
+
+        function resetPassword(id) {
+
+            Swal.fire({
+                title: 'Reset mật khẩu?',
+                text: "Mật khẩu mới sẽ được tạo ngẫu nhiên",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Reset',
+                cancelButtonText: 'Hủy'
+            }).then((result) => {
+
+                if (result.isConfirmed) {
+
+                    $.post('/Admin/Staff/ResetPassword', { id: id }, function (res) {
+
+                        if (res.success) {
+
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Reset thành công!',
+                                html:
+                                    '<b>Tài khoản:</b> <span id="username">' + res.username + '</span><br>' +
+                                    '<b>Mật khẩu mới:</b> <span id="password">' + res.password + '</span>' +
+                                    '<br><br><button class="btn btn-success" onclick="copyPassword()">Copy</button>',
+                                showConfirmButton: false,   // ❌ bỏ nút OK
+                                allowOutsideClick: false,   // ❌ không cho click ra ngoài tắt
+                                allowEscapeKey: false       // ❌ không cho bấm ESC tắt
+                            });
+
+                        } else {
+
+                            Swal.fire('Lỗi', res.message, 'error');
+
+                        }
+
+                    });
+
+                }
+
+            });
+        }
+
+        function copyPassword() {
+
+            const text =
+                "Tài khoản: " + document.getElementById("username").innerText +
+                "\nMật khẩu: " + document.getElementById("password").innerText;
+
+            navigator.clipboard.writeText(text);
+
+            Swal.fire('Đã copy!', '', 'success');
+        }
+
+    </script>
+
+}
+
+<!-- CSS -->
+<style>
+    .switch {
+        position: relative;
+        display: inline-block;
+        width: 55px;
+        height: 28px;
+    }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        inset: 0;
+        background-color: #ccc;
+        border-radius: 30px;
+        transition: 0.3s;
+    }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 22px;
+            width: 22px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            border-radius: 50%;
+            transition: 0.3s;
+        }
+
+    input:checked + .slider {
+        background-color: #7c3aed;
+    }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+</style>

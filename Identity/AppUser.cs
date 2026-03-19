@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using Project_HotelBooking.Enums;
 
 namespace Project_HotelBooking.Identity
 {
@@ -19,6 +20,9 @@ namespace Project_HotelBooking.Identity
         public DateTime? StartWorkingDate { get; set; } // Ngày vào làm
         public bool IsActive { get; set; } = true;    // Còn làm việc?
         public string? AvatarUrl { get; set; }        // Ảnh đại diện
+        public UserRole Role { get; set; }
+
+        public bool MustChangePassword { get; set; } = false; // Bắt buộc staff đổi mật khẩu
 
         public bool IsDeleted { get; set; }
 

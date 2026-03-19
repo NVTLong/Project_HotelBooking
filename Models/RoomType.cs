@@ -12,8 +12,8 @@ namespace Project_HotelBooking.Models
 
         public bool IsActive { get; set; } = true;
 
-        public ICollection<Room>? Rooms { get; set; }
-        public ICollection<RoomTypeImage>? RoomTypeImages { get; set; }
+        public ICollection<Room>? Rooms { get; set; } = new List<Room>();
+        public ICollection<RoomTypeImage>? RoomTypeImages { get; set; } = new List<RoomTypeImage>();
     }
 
 }

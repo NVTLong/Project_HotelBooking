@@ -1,0 +1,363 @@
+﻿@using Project_HotelBooking.Enums
+@using Project_HotelBooking.Enums.Helper
+@model IEnumerable<Project_HotelBooking.Application.DTOs.Service.HotelServiceDto>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<style>
+    .action-icon {
+        font-size: 24px;
+        padding: 6px;
+        border-radius: 6px;
+        transition: 0.2s;
+    }
+
+        .action-icon:hover {
+            filter: brightness(70%);
+        }
+
+    /* IsActive*/
+    .switch {
+        position: relative;
+        display: inline-block;
+        width: 55px;
+        height: 28px;
+    }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        inset: 0;
+        background-color: #ccc;
+        border-radius: 30px;
+        transition: 0.3s;
+    }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 22px;
+            width: 22px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            border-radius: 50%;
+            transition: 0.3s;
+        }
+
+    input:checked + .slider {
+        background-color: #7c3aed;
+    }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+    /* CSS IsActive */
+    .status-active {
+        background-color: #e8f7ee;
+        color: #1e7e34;
+        border: 1px solid #28a745;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 500;
+    }
+
+    .status-inactive {
+        background-color: #fdeaea;
+        color: #c82333;
+        border: 1px solid #dc3545;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 500;
+    }
+
+    /* SELECT2 */
+    /* Fix Select2 height giống input bootstrap */
+    .select2-container .select2-selection--single {
+        height: 38px !important;
+        padding: 6px 12px;
+        border: 1px solid #ced4da;
+        border-radius: 6px;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        line-height: 24px;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 36px;
+    }
+
+    /* CSS Status */
+    .status-available {
+        background-color: #e8f7ee;
+        color: #1e7e34;
+        border: 1px solid #28a745;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 500;
+    }
+
+    .status-occupied {
+        background-color: #fdeaea;
+        color: #c82333;
+        border: 1px solid #dc3545;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 500;
+    }
+
+    .status-maintenance {
+        background-color: #fff8e1;
+        color: #856404;
+        border: 1px solid #ffc107;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 500;
+    }
+
+    .status-cleaning {
+        background-color: #e7f6fb;
+        color: #0c5460;
+        border: 1px solid #17a2b8;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 500;
+    }
+
+</style>
+
+<button type="button" class="btn btn-primary me-2" id="btnAddNew">
+    <span class="svg-icon svg-icon svg-icon-1 svg_plus p-0"></span> Thêm mới
+</button>
+
+<div class="table-scroll mt-2">
+    <table class="table table-bordered">
+        <thead>
+            <tr class="text-center">
+                <th>Tên dịch vụ</th>
+                <th>Giá</th>
+                <th>Đơn vị</th>
+                <th>Chỉ 1 lần</th>
+                <th>Hành động</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td class="text-center">@item.Name</td>
+                    <td class="text-center">@item.Price.ToString("N0")</td>
+                    <td class="text-center">@item.Unit</td>
+                    <td class="text-center">@item.IsOneTime</td>
+                    <td class="text-center">
+
+                        <i class="bi bi-pencil-square fs-3 text-warning me-3 action-icon btn-edit"
+                           onclick="openEdit(@item.Id)"
+                           title="Edit"></i>
+
+                        @* <i class="bi bi-eye-fill fs-3 text-info me-3 action-icon btn-detail"
+                           data-id="@item.Id"
+                           title="Details"></i> *@
+
+                        <i class="bi bi-trash fs-3 text-danger action-icon btn-delete"
+                           data-id="@item.Id"
+                           title="Delete"></i>
+
+                    </td>
+                </tr>
+            }
+
+        </tbody>
+    </table>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="serviceModal" tabindex="-1" data-bs-backdrop="static" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalTitle">Thêm / Sửa dịch vụ</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+
+                <!-- Hidden Id để phân biệt Create / Edit -->
+                <input type="hidden" id="Id" name="Id" />
+
+                <!-- Tên dịch vụ -->
+                <div class="col-12 mb-3">
+                    <label for="Name">Tên dịch vụ</label>
+                    <input type="text" id="Name" name="Name" class="form-control" />
+                </div>
+
+                <!-- Giá -->
+                <div class="col-12 mb-3">
+                    <label for="Price">Giá</label>
+                    <input type="number" id="Price" name="Price" class="form-control" />
+                </div>
+
+                <!-- Đơn vị -->
+                <div class="col-12 mb-3">
+                    <label for="Unit">Đơn vị</label>
+                    <input type="text" id="Unit" name="Unit" class="form-control" placeholder="Ví dụ: cái, lần, giờ" />
+                </div>
+
+                <!-- Dịch vụ 1 lần hay nhiều lần -->
+                <div class="col-12 mb-3">
+                    <label for="IsOnetime" class="form-label">Dịch vụ thực hiện một lần?</label>
+                    <label class="switch">
+                        <input type="checkbox"
+                               id="IsOnetime"
+                               name="IsOnetime"
+                               value="true">
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="submit" id="btnSave" class="btn btn-primary">Lưu</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- JS -->
+@section Scripts {
+    <script>
+            $(document).ready(function () {
+
+            // ===== CREATE =====
+            $("#btnAddNew").on("click", function () {
+
+                $("#Id").val(0);
+                $("#Name").val("");
+                $("#Price").val("");
+                $("#Unit").val("");
+                $('#IsOnetime').prop('checked'); // mặc định hoạt động
+
+                $("#modalTitle").text("Thêm dịch vụ");
+
+                var modal = new bootstrap.Modal(document.getElementById('serviceModal'));
+                modal.show();
+            });
+
+            // ===== SAVE =====
+            $("#btnSave").on("click", function () {
+
+                var id = Number($("#Id").val());
+
+                var payload = {
+                    Id: id,
+                    Name: $("#Name").val(),
+                    Price: $("#Price").val(),
+                    Unit: $("#Unit").val(),
+                    IsOnetime: $('#IsOnetime').prop('checked'),
+
+                };
+
+                var isUpdate = id > 0;
+
+                $.ajax({
+                    url: isUpdate
+                        ? "/Admin/HotelServices/Update"
+                        : "/Admin/HotelServices/Create",
+
+                    type: isUpdate ? "PUT" : "POST",
+                    contentType: "application/json",
+                    data: JSON.stringify(payload),
+
+                    success: function (res) {
+
+                        if (res.status === 200) {
+
+                            bootstrap.Modal.getInstance(document.getElementById('serviceModal')).hide();
+
+                            Swal.fire({
+                                icon: "success",
+                                title: "Thành công!",
+                                text: isUpdate ? "Cập nhật thành công" : "Thêm thành công"
+                            }).then(() => location.reload());
+                        }
+                        else {
+                            Swal.fire("Lỗi", res.message, "error");
+                        }
+                    },
+                    error: function () {
+                        Swal.fire("Lỗi", "Có lỗi xảy ra", "error");
+                    }
+                });
+            });
+
+        });
+
+               // ===== EDIT =====
+        function openEdit(id) {
+
+            $.get("/Admin/HotelServices/GetById/" + id, function (res) {
+
+                $("#Id").val(res.id);
+                $("#Name").val(res.name);
+                $("#Price").val(res.price);
+                $("#Unit").val(res.unit);
+                $('#IsOnetime').prop('checked', res.isOnetime);
+
+                $("#modalTitle").text("Cập nhật dịch vụ");
+
+                var modal = new bootstrap.Modal(document.getElementById('serviceModal'));
+                modal.show();
+            });
+        }
+
+        // ===== DELETE =====
+            $(document).on("click", ".btn-delete", function () {
+            var id = $(this).data("id");
+
+            Swal.fire({
+                title: "Bạn chắc chắn?",
+                text: "Không thể hoàn tác!",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonText: "Xóa",
+                cancelButtonText: "Hủy"
+            }).then((result) => {
+
+                if (result.isConfirmed) {
+
+                    $.ajax({
+                        url: "/Admin/HotelServices/Delete/",
+                        type: "DELETE",
+                        data : {id : id},
+                        success: function () {
+
+                            Swal.fire("Đã xóa!", "", "success")
+                                .then(() => location.reload());
+                        }
+                    });
+
+                }
+            });
+        });
+
+    </script>
+}

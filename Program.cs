@@ -10,6 +10,8 @@ builder.Services.AddControllersWithViews();
 
 // Infrastructure (DbContext + Identity)
 builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+
 
 // C?u h?nh Cookie
 builder.Services.ConfigureApplicationCookie(options =>

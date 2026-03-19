@@ -27,8 +27,8 @@ namespace Project_HotelBooking.Data
         public DbSet<RoomAmenity> RoomAmenities { get; set; }
         public DbSet<Booking> Bookings { get; set; }
         public DbSet<BookingDetail> BookingDetails { get; set; }
-        public DbSet<Service> Services { get; set; }
-        public DbSet<BookingService> BookingServices { get; set; }
+        public DbSet<HotelService> HotelServices { get; set; }
+        public DbSet<BookingHotelService> BookingHotelServices { get; set; }
         public DbSet<Promotion> Promotions { get; set; }
         public DbSet<Payment> Payments { get; set; }
 
@@ -73,11 +73,6 @@ namespace Project_HotelBooking.Data
                 .WithMany(r => r.RoomAmenities)
                 .HasForeignKey(ra => ra.RoomId);
 
-            builder.Entity<Booking>()
-                .HasOne(b => b.Customer)
-                .WithMany(u => u.Bookings)
-                .HasForeignKey(b => b.CustomerId);
-
             builder.Entity<RoomAmenity>()
                 .HasOne(ra => ra.Amenity)
                 .WithMany(a => a.RoomAmenities)
@@ -101,13 +96,13 @@ namespace Project_HotelBooking.Data
                 .HasForeignKey(bd => bd.RoomId);
 
             // BookingService
-            builder.Entity<BookingService>()
-                .HasOne(bs => bs.Booking)
-                .WithMany(b => b.BookingServices)
-                .HasForeignKey(bs => bs.BookingId);
+            builder.Entity<BookingHotelService>()
+                .HasOne(bs => bs.BookingDetail)
+                .WithMany(b => b.BookingHotelServices)
+                .HasForeignKey(bs => bs.BookingDetailId);
 
-            builder.Entity<BookingService>()
-                .HasOne(bs => bs.Service)
+            builder.Entity<BookingHotelService>()
+                .HasOne(bs => bs.HotelService)
                 .WithMany(s => s.BookingServices)
                 .HasForeignKey(bs => bs.ServiceId);
 
@@ -116,6 +111,52 @@ namespace Project_HotelBooking.Data
                 .HasOne(p => p.Booking)
                 .WithMany(b => b.Payments)
                 .HasForeignKey(p => p.BookingId);
+
+            // ==============================
+            // Tránh trùng lặp dữ liệu
+            // ==============================
+
+            // 1. Room: Số phòng không được trùng trong cùng tầng
+            builder.Entity<Room>()
+                .HasIndex(r => new { r.FloorId, r.RoomNumber })
+                .IsUnique();
+
+
+            // 2. Floor: Số tầng không được trùng
+            builder.Entity<Floor>()
+                .HasIndex(f => f.FloorNumber)
+                .IsUnique();
+
+
+            // 3. RoomType: Tên loại phòng không được trùng
+            builder.Entity<RoomType>()
+                .HasIndex(rt => rt.Name)
+                .IsUnique();
+
+
+            // 4. Service: Tên dịch vụ không được trùng
+            builder.Entity<HotelService>()
+                .HasIndex(s => s.Name)
+                .IsUnique();
+
+
+            // 5. Amenity: Tên tiện nghi không được trùng
+            builder.Entity<Amenity>()
+                .HasIndex(a => a.Name)
+                .IsUnique();
+
+
+            // 6. Promotion / Voucher: Mã khuyến mãi không được trùng
+            builder.Entity<Promotion>()
+                .HasIndex(p => p.Code)
+                .IsUnique();
+
+
+            // 7. User / Customer: Email không được trùng
+            builder.Entity<Customer>()
+                .HasIndex(c => c.Email)
+                .IsUnique();
+
         }
 
         public static async Task SeedAsync(
@@ -126,7 +167,7 @@ namespace Project_HotelBooking.Data
             // 1️ Seed Roles
             // ============================
 
-            string[] roles = { "Admin", "Receptionist", "Accountant", "Customer" };
+            string[] roles = { "Admin", "Receptionist", "Accountant", "Customer", "Staff" };
 
             foreach (var role in roles)
             {

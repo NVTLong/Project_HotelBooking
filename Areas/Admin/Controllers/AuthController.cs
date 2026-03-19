@@ -1,10 +1,14 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
+using Project_HotelBooking.Areas.Admin.ViewModels;
 using Project_HotelBooking.Identity;
 
 namespace Project_HotelBooking.Areas.Admin.Controllers
 {
     [Area("Admin")]
+
     public class AuthController : Controller
     {
         private readonly SignInManager<AppUser> _signInManager;
@@ -49,11 +53,49 @@ namespace Project_HotelBooking.Areas.Admin.Controllers
 
             if (result.Succeeded)
             {
-                return RedirectToAction("Index", "Dashboard");
+
+                if (user.MustChangePassword)
+                {
+                    return RedirectToAction("ForceChangePassword", "Auth", new { area = "Admin" });
+                }
+
+                return RedirectToAction("Index", "Dashboard", new { area = "Admin" });
             }
 
             ModelState.AddModelError("", "Invalid login");
             return View();
+        }
+
+        [Authorize]
+        public IActionResult ForceChangePassword()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ForceChangePassword(ChangePasswordVM model)
+        {
+            var user = await _userManager.GetUserAsync(User);
+
+            var result = await _userManager.ChangePasswordAsync(
+                user,
+                model.OldPassword,
+                model.NewPassword);
+
+            if (!result.Succeeded)
+            {
+                ModelState.AddModelError("", "Đổi mật khẩu thất bại");
+                return View(model);
+            }
+
+            user.MustChangePassword = false;
+            await _userManager.UpdateAsync(user);
+
+            // đã đổi mật khẩu
+            user.MustChangePassword = false;
+            await _userManager.UpdateAsync(user);
+
+            return RedirectToAction("Index", "Dashboard", new { area = "Admin" });
         }
 
     }
