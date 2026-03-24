@@ -1,0 +1,50 @@
+@model IEnumerable<Project_HotelBooking.Models.RoomType>
+
+<style>
+    .glass-dropdown {
+        background: rgba(15, 23, 42, 0.75) !important; /* Đổi sang nền mờ màu xanh đen để giữ chữ trắng luôn rõ rệt trên trang */
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.15) !important;
+        border-radius: 12px;
+        padding: 0.5rem 0;
+        box-shadow: 0 15px 50px rgba(0,0,0,0.3);
+    }
+
+    .glass-dropdown .dropdown-item {
+        color: rgba(255, 255, 255, 0.9) !important;
+        transition: all 0.3s ease;
+    }
+
+    .glass-dropdown .dropdown-item:hover, .glass-dropdown .dropdown-item:focus {
+        background: rgba(255, 255, 255, 0.1) !important;
+        color: #fff !important;
+        transform: translateX(5px);
+    }
+
+    .glass-dropdown .dropdown-divider {
+        border-color: rgba(255, 255, 255, 0.15);
+    }
+</style>
+
+<li class="nav-item dropdown">
+    <a class="nav-link dropdown-toggle" href="#" id="roomTypeDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+        Hạng phòng
+    </a>
+    <ul class="dropdown-menu glass-dropdown" aria-labelledby="roomTypeDropdown">
+        @foreach (var item in Model)
+        {
+            <li>
+                <a class="dropdown-item py-2" style="font-size: 0.85rem; letter-spacing: 1px; text-transform: uppercase;" href="/RoomType/Details/@item.Id">@item.Name</a>
+            </li>
+        }
+        @if (!Model.Any())
+        {
+            <li><span class="dropdown-item py-2" style="font-size: 0.85rem; letter-spacing: 1px; opacity: 0.6;">Chưa có dữ liệu</span></li>
+        }
+        <li><hr class="dropdown-divider"></li>
+        <li>
+            <a class="dropdown-item py-2 fw-bold" style="font-size: 0.85rem; letter-spacing: 1px; text-transform: uppercase; color: var(--accent-gold) !important;" href="/#rooms">Xem tất cả phòng</a>
+        </li>
+    </ul>
+</li>

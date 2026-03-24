@@ -1,0 +1,253 @@
+@using Project_HotelBooking.Enums
+@using Project_HotelBooking.Enums.Helper
+@model List<Payment>
+<style>
+    .action-icon {
+        font-size: 24px;
+        padding: 6px;
+        border-radius: 6px;
+        transition: 0.2s;
+    }
+
+        .action-icon:hover {
+            filter: brightness(70%);
+        }
+
+    /* IsActive*/
+    .switch {
+        position: relative;
+        display: inline-block;
+        width: 55px;
+        height: 28px;
+    }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        inset: 0;
+        background-color: #ccc;
+        border-radius: 30px;
+        transition: 0.3s;
+    }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 22px;
+            width: 22px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            border-radius: 50%;
+            transition: 0.3s;
+        }
+
+    input:checked + .slider {
+        background-color: #7c3aed;
+    }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+    /* CSS IsActive */
+    .status-paid {
+        background-color: #e8f7ee;
+        color: #1e7e34;
+        border: 1px solid #28a745;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 500;
+    }
+
+    .status-unpaid {
+        background-color: #e7f6fb;
+        color: #0c5460;
+        border: 1px solid #17a2b8;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 500;
+    }
+
+    .status-refunded {
+        background-color: #fdeaea;
+        color: #c82333;
+        border: 1px solid #dc3545;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 500;
+    }
+</style>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th class="text-center">Booking</th>
+            <th class="text-center">Khách hàng</th>
+            <th class="text-center">Số tiền</th>
+            <th class="text-center">Trạng thái</th>
+            <th class="text-center">Hành động</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td class="text-center">@item.Booking.BookingCode</td>
+                <td class="text-center">@item.Booking.Customer.FullName</td>
+                <td class="text-center">@item.Amount.ToString("N0")</td>
+
+                <td class="text-center">
+                    <span class="status status-@item.Status.ToString().ToLower()">
+                        @EnumHelper.GetDisplayName(item.Status)
+                    </span>
+                </td>
+
+                <td class="text-center">
+                    @if (item.Status == PaymentStatus.Unpaid)
+                    {
+                        @* <button class="btn btn-success"
+                                onclick="pay(@item.BookingId)">
+                            Thanh toán
+                        </button> *@
+                        <i class="bi bi-cash-coin fs-3 text-info me-3 action-icon"
+                           onclick="pay(@item.BookingId)"
+                           title="Thanh toán"></i>
+                    }
+                    else
+                    {
+                        @* <button class="btn btn-secondary"
+                                onclick="printInvoice(@item.BookingId)">
+                            In hóa đơn
+                        </button> *@
+                        <i class="bi bi-printer fs-3 text-info me-3 action-icon"
+                           onclick="printInvoice(@item.BookingId)"
+                           title="In hóa đơn"></i>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<!-- Modal Pay -->
+<div class="modal fade" id="paymentModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title">Chọn phương thức thanh toán</h5>
+                <i class="bi bi-x-lg" data-bs-dismiss="modal" style="cursor: pointer;"></i>
+            </div>
+
+            <div class="modal-body text-center">
+
+                <!-- Cash -->
+                <button class="btn btn-success w-100 mb-3"
+                        onclick="confirmPay('Cash')">
+                    💵 Tiền mặt
+                </button>
+
+                <!-- Banking -->
+                <button class="btn btn-primary w-100"
+                        onclick="showQR()">
+                    🏦 Chuyển khoản
+                </button>
+
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="qrModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content text-center">
+
+            <div class="modal-header">
+                <h5 class="modal-title">Quét QR để thanh toán</h5>
+                <i class="bi bi-x-lg" data-bs-dismiss="modal" style="cursor: pointer;"></i>
+            </div>
+
+            <div class="modal-body">
+
+                <!-- QR -->
+                <img id="qrImage"
+                     src=""
+                     style="width:250px;height:250px" />
+
+                <p class="mt-3">
+                    Nội dung: <strong id="qrContent"></strong>
+                </p>
+
+                <p>Sau khi chuyển khoản xong bấm xác nhận</p>
+
+                <button class="btn btn-success mt-2"
+                        onclick="confirmPay('Banking')">
+                    Tôi đã thanh toán
+                </button>
+
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let currentBookingId = 0;
+
+        function pay(bookingId) {
+            currentBookingId = bookingId;
+
+            let modal = new bootstrap.Modal(document.getElementById('paymentModal'));
+            modal.show();
+        }
+        function showQR() {
+
+            // đóng modal chọn
+            bootstrap.Modal.getInstance(document.getElementById('paymentModal')).hide();
+
+            let content = "BOOKING_" + currentBookingId;
+
+            // QR free API
+            let qrUrl = "https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=" + content;
+
+            $("#qrImage").attr("src", qrUrl);
+            $("#qrContent").text(content);
+
+            let modal = new bootstrap.Modal(document.getElementById('qrModal'));
+            modal.show();
+        }
+        function confirmPay(method) {
+
+            $.post('/Admin/Payments/Pay', {
+                bookingId: currentBookingId,
+                method: method
+            }, function (res) {
+
+                if (res.success) {
+                    alert("Thanh toán thành công");
+
+                    bootstrap.Modal.getInstance(document.getElementById('qrModal'))?.hide();
+
+                    location.reload();
+                } else {
+                    alert(res.message);
+                }
+
+            });
+        }
+
+    </script>
+}

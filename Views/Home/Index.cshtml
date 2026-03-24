@@ -1,8 +1,677 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+@{
+    ViewData["Title"] = "Trải nghiệm kỳ nghỉ đẳng cấp";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+
+<style>
+    /* Hero Section */
+    .hero {
+        height: 100vh;
+        min-height: 700px;
+        background: linear-gradient(rgba(15, 23, 42, 0.4), rgba(15, 23, 42, 0.6)), url('/images/hero.png');
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        color: #fff;
+        text-align: center;
+    }
+
+    .hero-content {
+        max-width: 900px;
+        z-index: 2;
+        padding: 0 20px;
+        transform: translateY(-40px);
+    }
+
+    .hero-subtitle {
+        text-transform: uppercase;
+        letter-spacing: 5px;
+        font-size: 0.9rem;
+        margin-bottom: 1.5rem;
+        display: inline-block;
+        border-bottom: 2px solid var(--accent-gold);
+        padding-bottom: 8px;
+        font-weight: 500;
+    }
+
+    .hero-title {
+        font-size: 4.5rem;
+        margin-bottom: 1.5rem;
+        line-height: 1.2;
+        font-family: 'Playfair Display', serif;
+        text-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    }
+
+    /* Booking Bar */
+    .booking-bar-container {
+        position: absolute;
+        bottom: 40px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 92%;
+        max-width: 1100px;
+        z-index: 10;
+    }
+
+    .booking-bar {
+        background: rgba(255, 255, 255, 0.08);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 16px;
+        padding: 2rem 2.5rem;
+        box-shadow: 0 25px 50px rgba(0,0,0,0.2);
+        display: flex;
+        flex-wrap: nowrap;
+        align-items: flex-end;
+        gap: 1.5rem;
+    }
+
+    .booking-field {
+        flex: 1;
+        min-width: 160px;
+    }
+
+    .booking-field label {
+        display: block;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        color: rgba(255, 255, 255, 0.9);
+        font-weight: 600;
+        margin-bottom: 0.8rem;
+        letter-spacing: 1.5px;
+    }
+
+    .booking-field input, .booking-field select {
+        border: none;
+        border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+        width: 100%;
+        padding: 0.5rem 0;
+        font-weight: 500;
+        outline: none;
+        color: #fff !important;
+        transition: all 0.3s ease;
+        background-color: transparent !important;
+        font-size: 1.1rem;
+    }
+
+    .booking-field input:focus, .booking-field select:focus {
+        border-color: var(--accent-gold);
+    }
+
+    .booking-field input[type="date"]::-webkit-calendar-picker-indicator {
+        cursor: pointer;
+        opacity: 0.7;
+        transition: opacity 0.3s ease;
+        filter: invert(1);
+    }
+    .booking-field input[type="date"]::-webkit-calendar-picker-indicator:hover {
+        opacity: 1;
+    }
+
+    /* Button Booking */
+    .btn-booking {
+        background: var(--accent-gold);
+        color: var(--primary-navy);
+        font-weight: 800;
+        font-size: 1.05rem;
+        border-radius: 12px !important;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        transition: all 0.3s ease;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: none;
+    }
+
+    .btn-booking:hover {
+        background: #fff;
+        transform: translateY(-3px);
+        box-shadow: 0 10px 25px rgba(255, 255, 255, 0.2);
+    }
+
+    /* Global Typography & Spacing */
+    .section-padding {
+        padding: 80px 0;
+    }
+
+    .section-title {
+        margin-bottom: 3rem;
+        text-align: center;
+    }
+
+    .section-title h2 {
+        font-size: 2.8rem;
+        margin-bottom: 1rem;
+        font-family: 'Playfair Display', serif;
+    }
+
+    .section-title .divider {
+        width: 80px;
+        height: 3px;
+        background: var(--accent-gold);
+        margin: 0 auto;
+    }
+
+    /* About Section Enhancements */
+    .experience-badge {
+        width: 140px; 
+        height: 140px; 
+        top: 50%; 
+        left: 0; 
+        transform: translate(-30%, -50%);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.15) !important;
+        z-index: 5;
+    }
+
+    /* Parallax Rooms */
+    .parallax-room {
+        position: relative;
+        height: 70vh;
+        min-height: 550px;
+        background-attachment: fixed;
+        background-position: center;
+        background-repeat: no-repeat;
+        background-size: cover;
+        margin-bottom: 2px;
+    }
+
+    .parallax-room::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(15, 23, 42, 0.45);
+        z-index: 1;
+    }
+
+    .room-glass-panel {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        box-shadow: 0 30px 60px rgba(0,0,0,0.2) !important;
+    }
+
+    .opacity-85 {
+        opacity: 0.85;
+    }
+
+    /* Offers Section - Swiper Coverflow */
+    .offers-swiper {
+        width: 100%;
+        padding-top: 20px;
+        padding-bottom: 50px;
+    }
+
+    .offers-swiper .swiper-slide {
+        background-position: center;
+        background-size: cover;
+        width: 100%;
+        max-width: 550px;
+        height: 400px;
+        border-radius: 20px;
+        overflow: hidden;
+        position: relative;
+    }
+
+    .offer-card {
+        width: 100%;
+        height: 100%;
+        position: relative;
+        background: #000;
+        border-radius: 20px;
+    }
+
+    .offer-card img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        opacity: 0.9;
+        transition: 0.5s ease;
+    }
+
+    .swiper-slide-active .offer-card img {
+        transform: scale(1.05);
+    }
+
+    .offer-card::after {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: linear-gradient(to top, rgba(15,23,42,0.95) 0%, rgba(15,23,42,0.1) 80%);
+    }
+
+    .offer-content {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        padding: 40px;
+        width: 100%;
+        color: #fff;
+        z-index: 2;
+    }
+
+    .offer-content h4 {
+        font-family: 'Playfair Display', serif;
+        font-size: 2rem;
+        margin-bottom: 0.8rem;
+    }
+
+    .swiper-pagination-bullet-active {
+        background: var(--accent-gold) !important;
+    }
+
+    /* Amenities */
+    .amenities-section {
+        background-color: #f8fafc;
+    }
+
+    .amenity-item {
+        text-align: center;
+        padding: 3.5rem 2rem;
+        border-right: 1px solid rgba(0,0,0,0.05);
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+        transition: all 0.4s ease;
+        height: 100%;
+        background: #fff;
+    }
+
+    .amenity-item:hover {
+        background: var(--accent-gold);
+        color: var(--primary-navy);
+        transform: translateY(-10px);
+        box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+        border-color: transparent;
+    }
+    
+    .amenity-item:hover * {
+        color: var(--primary-navy) !important;
+    }
+
+    .amenity-icon {
+        font-size: 3rem;
+        color: var(--accent-gold);
+        margin-bottom: 1.5rem;
+        transition: 0.4s;
+    }
+
+    /* Responsive Adjustments */
+    @@media (max-width: 991px) {
+        .booking-bar { flex-wrap: wrap !important; gap: 1rem; padding: 2rem; }
+        .hero-title { font-size: 3.5rem; }
+        .hero-content { transform: translateY(-30px); }
+        .offers-swiper .swiper-slide { max-width: 450px; height: 350px; }
+    }
+
+    @@media (max-width: 768px) {
+        .section-padding { padding: 60px 0; }
+        .section-title h2 { font-size: 2.2rem; }
+        .hero { height: auto; min-height: 100vh; padding: 120px 0 50px 0; background-attachment: scroll; justify-content: flex-start; }
+        .hero-content { transform: none; padding-top: 0; margin-bottom: 2rem; }
+        .hero-title { font-size: 2.5rem; }
+        .booking-bar-container { position: relative; bottom: 0; transform: none; left: 0; width: 100%; padding: 0 15px; margin-top: 0; }
+        .booking-bar { padding: 1.5rem; flex-direction: column; gap: 1rem; border-radius: 12px; }
+        .booking-field { width: 100%; }
+        
+        .experience-badge { 
+            width: 100px !important; height: 100px !important; 
+            transform: translate(-10%, -50%) !important;
+        }
+        .experience-badge h3 { font-size: 1.5rem !important; }
+        .experience-badge span { font-size: 0.6rem !important; }
+
+        .parallax-room {
+            background-attachment: scroll;
+            height: auto;
+            min-height: 400px;
+            padding: 60px 0;
+            margin-bottom: 0;
+        }
+        .room-glass-panel { padding: 2rem !important; }
+
+        .offers-swiper .swiper-slide { max-width: 300px; height: 320px; }
+        .offer-content { padding: 25px; }
+        .offer-content h4 { font-size: 1.5rem; }
+        .amenity-item { border: 1px solid rgba(0,0,0,0.05); margin-bottom: 15px; border-radius: 12px; }
+    }
+</style>
+
+<!-- Hero Section -->
+<section class="hero" id="home">
+    <div class="hero-content" data-aos="fade-up">
+        <span class="hero-subtitle">Chào mừng bạn đến với thiên đường nghỉ dưỡng</span>
+        <h1 class="hero-title">Trải Nghiệm Sự Sang Trọng Tuyệt Đối</h1>
+        <p class="fs-5 mb-5 fw-light">Tận hưởng không gian sống tinh tế kết hợp cùng dịch vụ đẳng cấp 5 sao ngay giữa lòng thành phố biển xinh đẹp.</p>
+    </div>
+
+    <!-- Booking Floating Bar -->
+    <div class="booking-bar-container">
+        <form class="booking-bar" id="booking" action="/Room/Index" method="get">
+            <div class="booking-field">
+                <label><i class="bi bi-calendar-event me-1 text-white-50"></i> Ngày đến</label>
+                <input type="date" id="checkInDate" name="checkIn" value="@DateTime.Now.ToString("yyyy-MM-dd")" min="@DateTime.Now.ToString("yyyy-MM-dd")">
+            </div>
+            <div class="booking-field">
+                <label><i class="bi bi-calendar-check me-1 text-white-50"></i> Ngày đi</label>
+                <input type="date" id="checkOutDate" name="checkOut" value="@DateTime.Now.AddDays(1).ToString("yyyy-MM-dd")" min="@DateTime.Now.AddDays(1).ToString("yyyy-MM-dd")">
+            </div>
+            <div class="booking-field">
+                <label><i class="bi bi-person me-1 text-white-50"></i> Người lớn</label>
+                <input type="number" name="adults" value="2" min="1" max="4" class="shadow-none">
+            </div>
+            <div class="booking-field">
+                <label><i class="bi bi-person-badge me-1 text-white-50"></i> Trẻ em</label>
+                <input type="number" name="children" value="0" min="0" max="2" class="shadow-none">
+            </div>
+            <div style="flex: 1; min-width: 200px; max-width: 280px;">
+                <button type="submit" class="btn btn-booking py-3 px-4 w-100 shadow"><i class="bi bi-building-check me-2 fs-5"></i> ĐẶT PHÒNG</button>
+            </div>
+        </form>
+    </div>
+</section>
+
+<!-- About Section -->
+<section class="section-padding bg-white" id="about">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6 mb-5 mb-lg-0" data-aos="fade-right">
+                <span class="text-uppercase tracking-widest text-warning small fw-bold">Về Chúng Tôi</span>
+                <h2 class="display-5 fw-bold mb-4 mt-2" style="font-family: 'Playfair Display', serif;">Nơi Khởi Nguồn Của Những Kỷ Niệm Hoàn Hảo</h2>
+                <div class="divider ms-0 mb-4" style="margin: 0;"></div>
+                <p class="text-muted fs-5 mb-4 opacity-85">
+                    Tọa lạc ngay trung tâm với tầm nhìn ôm trọn đại dương xanh mát, Luxury Hotel tự hào là điểm đến đẳng cấp 5 sao mang lại trải nghiệm nghỉ dưỡng xa hoa, thư giãn và trọn vẹn nhất.
+                </p>
+                <p class="text-muted mb-5 opacity-85">
+                    Sự kết hợp tinh tế giữa kiến trúc đương đại và nét thanh lịch Á Đông, cùng đội ngũ nhân viên tận tâm chuyên nghiệp, chúng tôi cam kết biến mọi khoảnh khắc của bạn thành kỳ nghỉ trong mơ.
+                </p>
+                <div class="d-flex flex-wrap align-items-center gap-4">
+                    <a href="#rooms" class="btn btn-reserve px-4 py-3 rounded-pill h-100 d-flex align-items-center">HẠNG PHÒNG <i class="bi bi-arrow-right ms-2"></i></a>
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-telephone-fill text-warning fs-2 me-3"></i>
+                        <div>
+                            <p class="mb-0 text-muted small text-uppercase tracking-widest">Hỗ trợ 24/7</p>
+                            <p class="mb-0 fs-5 fw-bold text-dark">+84 123 456 789</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6 position-relative about-images" data-aos="fade-left">
+                <div class="row g-4 align-items-center">
+                    <div class="col-6">
+                        <img src="https://images.unsplash.com/photo-1578683010236-d716f9a3f461?q=80&w=800&auto=format&fit=crop" alt="Hotel Exterior" class="img-fluid rounded-4 shadow-lg mb-4" style="height: 320px; object-fit: cover; width: 100%;">
+                    </div>
+                    <div class="col-6">
+                        <img src="https://images.unsplash.com/photo-1578683010236-d716f9a3f461?q=80&w=800&auto=format&fit=crop" alt="Hotel Interior" class="img-fluid rounded-4 shadow-lg" style="height: 420px; object-fit: cover; width: 100%;">
+                    </div>
+                </div>
+                <!-- 10 Years Experience Badge -->
+                <div class="position-absolute bg-white p-3 rounded-circle text-center d-flex flex-column justify-content-center border border-4 border-warning experience-badge">
+                    <h3 class="text-warning fw-bold mb-0 display-6">10</h3>
+                    <span class="small text-muted fw-bold text-uppercase" style="font-size: 0.7rem; letter-spacing: 1px;">NĂM<br>KINH NGHIỆM</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Rooms Parallax Section -->
+<section id="rooms">
+    <div class="pt-5 pb-5 bg-white">
+        <div class="container text-center">
+            <div class="section-title mb-0">
+                <span class="text-uppercase tracking-widest text-warning small fw-bold">Dành cho bạn</span>
+                <h2>Hạng Phòng</h2>
+                <div class="divider"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Parallax Room 1 -->
+    <div class="parallax-room d-flex align-items-center" style="background-image: url('https://images.unsplash.com/photo-1590490360182-c33d57733427?q=80&w=1920&auto=format&fit=crop');">
+        <div class="container position-relative z-2">
+            <div class="row">
+                <div class="col-lg-6 col-md-8">
+                    <div class="room-glass-panel p-5 rounded-4 text-white shadow-lg" data-aos="fade-right">
+                        <h3 class="display-6 mb-3 fw-bold" style="font-family: 'Playfair Display', serif;">Phòng Deluxe Hướng Biển</h3>
+                        <div class="fs-4 text-warning fw-bold mb-4">1.500.000đ <span class="fs-6 text-white-50 fw-normal">/ đêm</span></div>
+                        
+                        <ul class="list-unstyled mb-4 fs-5 opacity-85">
+                            <li class="mb-3"><i class="bi bi-person-fill me-3 text-warning"></i> Tối đa: 2 Người lớn</li>
+                            <li class="mb-3"><i class="bi bi-arrows-fullscreen me-3 text-warning"></i> Diện tích: 35m²</li>
+                            <li class="mb-3"><i class="bi bi-water me-3 text-warning"></i> View: Ban công hướng biển</li>
+                        </ul>
+                        <a href="#" class="btn btn-outline-warning rounded-pill px-5 py-3 fw-bold text-uppercase tracking-widest">Xem Thêm <i class="bi bi-arrow-right ms-2"></i></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Parallax Room 2 -->
+    <div class="parallax-room d-flex align-items-center" style="background-image: url('https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?q=80&w=1920&auto=format&fit=crop');">
+        <div class="container position-relative z-2">
+            <div class="row justify-content-end">
+                <div class="col-lg-6 col-md-8">
+                    <div class="room-glass-panel p-5 rounded-4 text-white shadow-lg" data-aos="fade-left">
+                        <h3 class="display-6 mb-3 fw-bold" style="font-family: 'Playfair Display', serif;">Hạng Suite Sang Trọng</h3>
+                        <div class="fs-4 text-warning fw-bold mb-4">2.800.000đ <span class="fs-6 text-white-50 fw-normal">/ đêm</span></div>
+                        
+                        <ul class="list-unstyled mb-4 fs-5 opacity-85">
+                            <li class="mb-3"><i class="bi bi-person-fill me-3 text-warning"></i> Tối đa: 2 Người lớn</li>
+                            <li class="mb-3"><i class="bi bi-arrows-fullscreen me-3 text-warning"></i> Diện tích: 55m²</li>
+                            <li class="mb-3"><i class="bi bi-droplet-fill me-3 text-warning"></i> Tiện ích: Bồn tắm hướng biển</li>
+                        </ul>
+                        <a href="#" class="btn btn-outline-warning rounded-pill px-5 py-3 fw-bold text-uppercase tracking-widest">Xem Thêm <i class="bi bi-arrow-right ms-2"></i></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Parallax Room 3 -->
+    <div class="parallax-room d-flex align-items-center" style="background-image: url('https://images.unsplash.com/photo-1618773928121-c32242e63f39?q=80&w=1920&auto=format&fit=crop');">
+        <div class="container position-relative z-2">
+            <div class="row">
+                <div class="col-lg-6 col-md-8">
+                    <div class="room-glass-panel p-5 rounded-4 text-white shadow-lg" data-aos="fade-right">
+                        <h3 class="display-6 mb-3 fw-bold" style="font-family: 'Playfair Display', serif;">Căn Hộ Tổng Thống</h3>
+                        <div class="fs-4 text-warning fw-bold mb-4">5.500.000đ <span class="fs-6 text-white-50 fw-normal">/ đêm</span></div>
+                        
+                        <ul class="list-unstyled mb-4 fs-5 opacity-85">
+                            <li class="mb-3"><i class="bi bi-people-fill me-3 text-warning"></i> Tối đa: 4 Người lớn, 2 Trẻ em</li>
+                            <li class="mb-3"><i class="bi bi-arrows-fullscreen me-3 text-warning"></i> Diện tích: 120m²</li>
+                            <li class="mb-3"><i class="bi bi-star-fill me-3 text-warning"></i> Đặc quyền: Hồ bơi vô cực riêng</li>
+                        </ul>
+                        <a href="#" class="btn btn-outline-warning rounded-pill px-5 py-3 fw-bold text-uppercase tracking-widest">Xem Thêm <i class="bi bi-arrow-right ms-2"></i></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Offers Section -->
+<section class="section-padding overflow-hidden" id="offers">
+    <div class="container text-center mb-5">
+        <div class="section-title mb-0">
+            <span class="text-uppercase tracking-widest text-warning small fw-bold">Trải nghiệm độc quyền</span>
+            <h2>Ưu Đãi Đặc Biệt</h2>
+            <div class="divider"></div>
+        </div>
+    </div>
+
+    <!-- Swiper -->
+    <div class="swiper offers-swiper">
+        <div class="swiper-wrapper">
+            <div class="swiper-slide">
+                <div class="offer-card shadow">
+                    <img src="https://images.unsplash.com/photo-1540518614846-7eded433c457?q=80&w=800&auto=format&fit=crop" loading="lazy" alt="Offer">
+                    <div class="offer-content text-start">
+                        <h4>Kỳ Nghỉ Lãng Mạn</h4>
+                        <p class="text-white-50">Tặng kèm chi phí setup bữa tối dưới ánh nến và rượu vang trọn vẹn yêu thương.</p>
+                        <a href="#" class="btn btn-outline-warning rounded-pill px-4 mt-2">Khám Phá <i class="bi bi-arrow-right ms-1"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="swiper-slide">
+                <div class="offer-card shadow">
+                    <img src="https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9?q=80&w=800&auto=format&fit=crop" loading="lazy" alt="Offer">
+                    <div class="offer-content text-start">
+                        <h4>Mùa Hè Sôi Động</h4>
+                        <p class="text-white-50">Giảm ngay 20% các hạng phòng hướng biển khi đặt phòng trước 14 ngày.</p>
+                        <a href="#" class="btn btn-outline-warning rounded-pill px-4 mt-2">Khám Phá <i class="bi bi-arrow-right ms-1"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="swiper-slide">
+                <div class="offer-card shadow">
+                    <img src="https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?q=80&w=800&auto=format&fit=crop" loading="lazy" alt="Offer">
+                    <div class="offer-content text-start">
+                        <h4>Kỳ Nghỉ Gia Đình</h4>
+                        <p class="text-white-50">Miễn phí trẻ em bữa sáng và vé vui chơi không giới hạn tại Kids Club.</p>
+                        <a href="#" class="btn btn-outline-warning rounded-pill px-4 mt-2">Khám Phá <i class="bi bi-arrow-right ms-1"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="swiper-slide">
+                <div class="offer-card shadow">
+                    <img src="https://images.unsplash.com/photo-1629140727571-9b5c6f6267b4?q=80&w=800&auto=format&fit=crop" loading="lazy" alt="Offer">
+                    <div class="offer-content text-start">
+                        <h4>Gói Hội Viên</h4>
+                        <p class="text-white-50">Đăng ký tham gia để được đặc quyền nâng hạng phòng và early check-in miễn phí.</p>
+                        <a href="#" class="btn btn-outline-warning rounded-pill px-4 mt-2">Khám Phá <i class="bi bi-arrow-right ms-1"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="swiper-slide">
+                <div class="offer-card shadow">
+                    <img src="https://images.unsplash.com/photo-1551882547-ff40c0d509af?q=80&w=800&auto=format&fit=crop" loading="lazy" alt="Offer">
+                    <div class="offer-content text-start">
+                        <h4>Gói Spa Relax</h4>
+                        <p class="text-white-50">Phục hồi với 60 phút massage thảo dược trị liệu và hồ bơi khoáng nóng đa năng.</p>
+                        <a href="#" class="btn btn-outline-warning rounded-pill px-4 mt-2">Khám Phá <i class="bi bi-arrow-right ms-1"></i></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Pagination -->
+        <div class="swiper-pagination position-static mt-5"></div>
+    </div>
+</section>
+
+<!-- Amenities Section -->
+<section class="section-padding amenities-section" id="amenities">
+    <div class="container">
+        <div class="section-title">
+            <span class="text-uppercase tracking-widest text-warning small fw-bold">Dịch vụ</span>
+            <h2>Tiện Ích Đẳng Cấp</h2>
+            <div class="divider"></div>
+        </div>
+
+        <div class="row g-0">
+            <div class="col-md-3">
+                <div class="amenity-item bg-white">
+                    <div class="amenity-icon"><i class="bi bi-water"></i></div>
+                    <h5>Hồ Bơi Vô Cực</h5>
+                    <p class="text-muted small mb-0">Tầng thượng với view 360 độ.</p>
+                </div>
+            </div>
+            <div class="col-md-3" id="cuisine">
+                <div class="amenity-item">
+                    <div class="amenity-icon"><i class="bi bi-cup-hot"></i></div>
+                    <h5>Nhà Hàng 5*</h5>
+                    <p class="text-muted small mb-0">Ẩm thực đa dạng từ Á sang Âu.</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="amenity-item bg-white">
+                    <div class="amenity-icon"><i class="bi bi-flower1"></i></div>
+                    <h5>Spa & Wellness</h5>
+                    <p class="text-muted small mb-0">Thư giãn tâm hồn và cơ thể.</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="amenity-item">
+                    <div class="amenity-icon"><i class="bi bi-airplane"></i></div>
+                    <h5>Đưa Đón Sân Bay</h5>
+                    <p class="text-muted small mb-0">Dịch vụ xe sang đưa đón 24/7.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="section-padding text-center overflow-hidden" style="background: var(--primary-navy); color: #fff;">
+    <div class="container py-5" data-aos="zoom-in">
+        <h2 class="mb-4 display-5">Sẵn Sàng Để Bắt Đầu Chuyến Đi?</h2>
+        <p class="mb-5 opacity-75 fs-5">Hãy để chúng tôi chăm sóc kỳ nghỉ của bạn một cách trọn vẹn nhất.</p>
+        <button class="btn btn-reserve btn-lg py-3 px-5">LIÊN HỆ ĐẶT PHÒNG</button>
+    </div>
+</section>
+
+@section Scripts {
+    <!-- Swiper JS -->
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            var swiper = new Swiper('.offers-swiper', {
+                effect: 'coverflow',
+                grabCursor: true,
+                centeredSlides: true,
+                slidesPerView: 'auto',
+                coverflowEffect: {
+                    rotate: 30, // Điều chỉnh độ nghiêng
+                    stretch: 0,
+                    depth: 250, // Khoảng cách 3D
+                    modifier: 1,
+                    slideShadows: true,
+                },
+                pagination: {
+                    el: '.swiper-pagination',
+                    clickable: true
+                },
+                loop: true,
+                autoplay: {
+                    delay: 3500,
+                    disableOnInteraction: false,
+                }
+            });
+
+
+            $('#checkInDate').on('change', function() {
+                var checkInVal = $(this).val();
+                if (checkInVal) {
+                    var checkInDate = new Date(checkInVal);
+                    var nextDay = new Date(checkInDate);
+                    nextDay.setDate(checkInDate.getDate() + 1);
+                    
+                    var year = nextDay.getFullYear();
+                    var month = String(nextDay.getMonth() + 1).padStart(2, '0');
+                    var day = String(nextDay.getDate()).padStart(2, '0');
+                    var minCheckOut = year + '-' + month + '-' + day;
+                    
+                    $('#checkOutDate').attr('min', minCheckOut);
+                    
+                    var checkOutVal = $('#checkOutDate').val();
+                    if (checkOutVal) {
+                        var currentCheckOut = new Date(checkOutVal);
+                        if (currentCheckOut <= checkInDate) {
+                            $('#checkOutDate').val(minCheckOut);
+                        }
+                    } else {
+                        $('#checkOutDate').val(minCheckOut);
+                    }
+                }
+            });
+        });
+    </script>
+}

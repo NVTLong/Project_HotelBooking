@@ -1,0 +1,111 @@
+@using Project_HotelBooking.Enums
+@model IEnumerable<Project_HotelBooking.Application.DTOs.Booking.BookingDto>
+@{
+    ViewData["Title"] = "Lịch sử đặt phòng";
+}
+
+<div class="container py-5" style="margin-top: 100px;">
+    <div class="mb-5">
+        <h2 class="font-playfair text-dark m-0">Lịch sử đặt phòng</h2>
+        <div class="bg-warning mt-2" style="width: 80px; height: 3px;"></div>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="text-center py-5 bg-white shadow-sm rounded-4">
+            <div class="mb-4">
+                <i class="bi bi-calendar-x text-muted display-1"></i>
+            </div>
+            <h4 class="text-dark">Bạn chưa có đơn đặt phòng nào</h4>
+            <p class="text-muted">Hãy khám phá các phòng của chúng tôi và đặt ngay hôm nay!</p>
+            <a asp-controller="Home" asp-action="Index" class="btn btn-dark px-5 py-3 mt-3 rounded-pill text-uppercase fw-bold shadow-sm">
+                Khám phá ngay
+            </a>
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive rounded-4 shadow-sm bg-white overflow-hidden">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-dark text-white">
+                    <tr>
+                        <th class="p-4">Mã đơn</th>
+                        <th class="p-4 text-center">Ngày nhận</th>
+                        <th class="p-4 text-center">Ngày trả</th>
+                        <th class="p-4 text-center">Tổng tiền</th>
+                        <th class="p-4 text-center">Trạng thái</th>
+                        <th class="p-4 text-center">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var booking in Model)
+                    {
+                        <tr>
+                            <td class="p-4 py-4">
+                                <span class="fw-bold text-dark">@booking.BookingCode</span>
+                                <div class="small text-muted">@booking.RoomCount phòng · @booking.TotalGuests người</div>
+                            </td>
+                            <td class="p-4 text-center">@booking.CheckInDate.ToString("dd/MM/yyyy")</td>
+                            <td class="p-4 text-center">@booking.CheckOutDate.ToString("dd/MM/yyyy")</td>
+                            <td class="p-4 text-center fw-bold text-dark">
+                                @booking.TotalAmount.ToString("N0") VNĐ
+                            </td>
+                            <td class="p-4 text-center">
+                                @switch (booking.Status)
+                                {
+                                    case BookingStatus.Pending:
+                                        <span class="badge bg-secondary-subtle text-secondary px-3 py-2 rounded-pill border border-secondary border-opacity-25">
+                                            <i class="bi bi-clock me-1"></i> Chờ xác nhận
+                                        </span>
+                                        break;
+                                    case BookingStatus.Confirmed:
+                                        <span class="badge bg-info-subtle text-info px-3 py-2 rounded-pill border border-info border-opacity-25">
+                                            <i class="bi bi-check-circle me-1"></i> Đã xác nhận
+                                        </span>
+                                        break;
+                                    case BookingStatus.CheckedIn:
+                                        <span class="badge bg-success-subtle text-success px-3 py-2 rounded-pill border border-success border-opacity-25">
+                                            <i class="bi bi-house-check me-1"></i> Đã nhận phòng
+                                        </span>
+                                        break;
+                                    case BookingStatus.CheckedOut:
+                                        <span class="badge bg-primary-subtle text-primary px-3 py-2 rounded-pill border border-primary border-opacity-25">
+                                            <i class="bi bi-box-arrow-right me-1"></i> Đã trả phòng
+                                        </span>
+                                        break;
+                                    case BookingStatus.Cancelled:
+                                        <span class="badge bg-danger-subtle text-danger px-3 py-2 rounded-pill border border-danger border-opacity-25">
+                                            <i class="bi bi-x-circle me-1"></i> Đã hủy
+                                        </span>
+                                        break;
+                                }
+                            </td>
+                            <td class="p-4 text-center">
+                                <button class="btn btn-outline-dark btn-sm rounded-pill px-3 shadow-none border-opacity-25">
+                                    Chi tiết
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+<style>
+    .font-playfair {
+        font-family: 'Playfair Display', serif;
+    }
+    .table thead th {
+        font-family: 'Inter', sans-serif;
+        font-weight: 500;
+        text-transform: uppercase;
+        font-size: 0.8rem;
+        letter-spacing: 1px;
+    }
+    .badge {
+        font-family: 'Inter', sans-serif;
+        font-weight: 500;
+    }
+</style>

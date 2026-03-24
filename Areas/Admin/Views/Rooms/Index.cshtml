@@ -1,0 +1,562 @@
+@using Project_HotelBooking.Enums
+@using Project_HotelBooking.Enums.Helper
+@model IEnumerable<Project_HotelBooking.Application.DTOs.Room.RoomDto>
+
+@{
+    ViewData["Title"] = "Index";
+}
+<style>
+    /* 1. RESTORE ACTION ICONS & STATUSES (TABLE) */
+    .action-icon {
+        font-size: 24px;
+        padding: 6px;
+        border-radius: 6px;
+        transition: 0.2s;
+        cursor: pointer;
+    }
+    .action-icon:hover { filter: brightness(70%); }
+
+    /* Status Badges */
+    .status-active, .status-available { background-color: #e8f7ee; color: #1e7e34; border: 1px solid #28a745; padding: 4px 10px; border-radius: 20px; font-size: 13px; font-weight: 500; }
+    .status-inactive, .status-occupied { background-color: #fdeaea; color: #c82333; border: 1px solid #dc3545; padding: 4px 10px; border-radius: 20px; font-size: 13px; font-weight: 500; }
+    .status-maintenance { background-color: #fff8e1; color: #856404; border: 1px solid #ffc107; padding: 4px 10px; border-radius: 20px; font-size: 13px; font-weight: 500; }
+    .status-reserved { background-color: #e7f1ff; color: #0d6efd; border: 1px solid #0d6efd; padding: 4px 10px; border-radius: 20px; font-size: 13px; font-weight: 500; }
+    .status-cleaning { background-color: #e7f6fb; color: #0c5460; border: 1px solid #17a2b8; padding: 4px 10px; border-radius: 20px; font-size: 13px; font-weight: 500; }
+
+    /* 2. RESTORE SWITCH TOGGLE */
+    .switch { position: relative; display: inline-block; width: 55px; height: 28px; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider { position: absolute; cursor: pointer; inset: 0; background-color: #ccc; border-radius: 30px; transition: 0.3s; }
+    .slider:before { position: absolute; content: ""; height: 22px; width: 22px; left: 3px; bottom: 3px; background-color: white; border-radius: 50%; transition: 0.3s; }
+    input:checked + .slider { background-color: #7c3aed; }
+    input:checked + .slider:before { transform: translateX(26px); }
+
+    /* 3. MODAL PREMIUM STYLES & ALIGNMENT FIX */
+    #roomModal .modal-content {
+        border: none;
+        border-radius: 24px;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        overflow: hidden;
+    }
+
+    #roomModal .modal-header {
+        background: var(--primary-navy, #0f172a);
+        color: #fff;
+        padding: 1.5rem 2rem;
+        border: none;
+    }
+
+    #roomModal .modal-title {
+        font-family: 'Playfair Display', serif;
+        font-weight: 700;
+        font-size: 1.5rem;
+    }
+
+    #roomModal .modal-body {
+        padding: 2rem;
+        background-color: #f8fafc;
+    }
+
+    #roomModal .modal-footer {
+        padding: 1.5rem 2rem;
+        border-top: 1px solid #e2e8f0;
+        background-color: #fff;
+    }
+
+    #roomModal label {
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #64748b;
+        margin-bottom: 0.5rem;
+        display: block; /* Ensure label is block for vertical alignment */
+    }
+
+    #roomModal .form-control {
+        height: 46px;
+        border-radius: 12px;
+        border: 1px solid #e2e8f0 !important;
+        padding: 0.75rem 1rem;
+        font-size: 0.95rem;
+        transition: all 0.2s;
+        background-color: #fff;
+        width: 100%;
+    }
+
+    #roomModal .form-control:focus {
+        border-color: #7c3aed !important;
+        box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.1);
+        outline: none;
+    }
+
+    /* SELECT2 ALIGNMENT FIX */
+    #roomModal .select2-container--default .select2-selection--single,
+    #roomModal .select2-container--default .select2-selection--multiple {
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 12px !important;
+        min-height: 46px !important;
+        background-color: #fff !important;
+        display: flex;
+        align-items: center;
+    }
+
+    #roomModal .select2-container--default .select2-selection--single .select2-selection__rendered {
+        line-height: normal !important;
+        padding-left: 1rem !important;
+        padding-right: 2rem !important;
+        color: #1e293b !important;
+        width: 100%;
+    }
+
+    #roomModal .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 44px !important;
+        right: 10px !important;
+        display: flex;
+        align-items: center;
+    }
+
+    #roomModal .select2-container--default.select2-container--focus .select2-selection--single,
+    #roomModal .select2-container--default.select2-container--focus .select2-selection--multiple {
+        border-color: #7c3aed !important;
+        box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.1) !important;
+    }
+
+    /* SELECT2 MULTI-SELECT CHOICE (TABS) SIZE */
+    #roomModal .select2-container--default .select2-selection--multiple .select2-selection__choice {
+        background-color: #f1f5f9 !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 8px !important;
+        padding: 4px 12px !important;
+        margin-top: 6px !important;
+        margin-bottom: 6px !important;
+        font-size: 0.9rem !important;
+        color: #1e293b !important;
+    }
+
+    #roomModal .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
+        color: #ef4444 !important;
+        margin-right: 8px !important;
+        border: none !important;
+        font-weight: bold !important;
+    }
+
+    #roomModal .select2-container--default .select2-selection--multiple .select2-selection__choice__remove:hover {
+        background: transparent !important;
+        color: #b91c1c !important;
+    }
+
+    #roomModal .btn-primary { background-color: #7c3aed; border: none; padding: 0.75rem 1.5rem; border-radius: 12px; font-weight: 600; transition: all 0.2s; }
+    #roomModal .btn-primary:hover { background-color: #6d28d9; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(124, 58, 237, 0.25); }
+    #roomModal .btn-secondary { background-color: #fff; color: #64748b; border: 1px solid #e2e8f0; padding: 0.75rem 1.5rem; border-radius: 12px; font-weight: 600; transition: all 0.2s; }
+    #roomModal .btn-secondary:hover { background-color: #f1f5f9; color: #1e293b; }
+
+    #imagePreview img { transition: transform 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-radius: 8px; border: 1px solid #ddd; }
+    #imagePreview img:hover { transform: scale(1.05); }
+</style>
+
+<button type="button" class="btn btn-primary me-2" id="btnAddNew">
+    <span class="svg-icon svg-icon svg-icon-1 svg_plus p-0"></span> Thêm mới
+</button>
+<div class="table-scroll mt-2">
+    <table class="table table-bordered">
+        <thead>
+            <tr class="text-center">
+                <th>Số phòng</th>
+                <th>Tầng</th>
+                <th>Loại phòng</th>
+                <th>Trạng thái</th>
+                <th>Tình trạng</th>
+                <th>Hành động</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td class="text-center">@item.RoomNumber</td>
+                    <td class="text-center">@item.FloorName</td>
+                    <td class="text-center">@item.RoomTypeName</td>
+                    <td class="text-center">
+                        <span class ="status status-@item.Status.ToString().ToLower()">
+                            @EnumHelper.GetDisplayName(item.Status)
+                        </span>
+                    </td>
+                    <td class="text-center">
+                        @if (item.IsActive)
+                        {
+                            <span class="status-active">Đang hoạt động</span>
+                        }
+                        else
+                        {
+                            <span class="status-inactive">Dừng hoạt động</span>
+                        }
+                    </td>
+
+
+                    <td class="text-center">
+
+                        <i class="bi bi-pencil-square fs-3 text-warning me-3 action-icon btn-edit"
+                           onclick="openEdit(@item.Id)"
+                           title="Edit"></i>
+
+                        @* <i class="bi bi-eye-fill fs-3 text-info me-3 action-icon btn-detail"
+                           data-id="@item.Id"
+                           title="Details"></i> *@
+
+                        <i class="bi bi-trash fs-3 text-danger action-icon btn-delete"
+                           data-id="@item.Id"
+                           title="Delete"></i>
+
+                    </td>
+                </tr>
+            }
+
+        </tbody>
+    </table>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="roomModal" tabindex="-1" data-bs-backdrop="static" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalTitle"></h5>
+                <i class="bi bi-x-lg" data-bs-dismiss="modal" style="cursor: pointer;"></i>
+            </div>
+
+            <div class="modal-body">
+
+                <!-- Hidden Id để phân biệt Create / Edit -->
+                <input type="hidden" id="Id" name="Id" />
+
+                <div class="row mb-3">
+
+                    <!-- Tên phòng -->
+                    <div class="col-6">
+                        <label>Số phòng</label>
+                        <input type="text" id="RoomNumber" name="RoomNumber" class="form-control" />
+                    </div>
+
+                    <!-- Tầng -->
+                    <div class="col-6">
+                        <label>Tầng</label>
+                        <select id="FloorId" name="FloorId" class="form-control">
+                        </select>
+                    </div>
+
+                </div>
+
+                <div class="row mb-3">
+
+                    <div class="col-6">
+                        <label>Loại phòng</label>
+                        <select id="RoomTypeId" name="RoomTypeId" class="form-control">
+                        </select>
+                    </div>
+
+                    <div class="col-6">
+                        <label>Tiện nghi</label>
+                        <select id="amenityList" class="form-control" multiple></select>
+                    </div>
+                </div>               
+                    
+                <div class="row mb-3">
+                    <!-- Field Ẩn khi Create -->
+                    <div class="col-6 updateFields" style="display:none">
+                        <label>Trạng thái</label>
+                    <select id="Status" name="Status" class="form-control">
+                            @foreach (RoomStatus status in Enum.GetValues(typeof(RoomStatus)))
+                            {
+                                <option value="@((int)status)">
+                                    @status.GetDisplayName()
+                                </option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="col-6 updateFields" style="display:none">
+                        <label class="d-block mb-2">Hoạt động</label>
+
+                        <label class="switch">
+                            <input type="checkbox"
+                                   id="IsActive"
+                                   name="IsActive"
+                                   value="true">
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-12">
+                        <label>Ảnh phòng (Tối đa 5 ảnh)</label>
+                        <input type="file" id="RoomImages" name="Images" class="form-control" multiple accept="image/*" />
+                        <div id="imagePreview" class="mt-2 d-flex flex-wrap gap-2"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="submit" id="btnSave" class="btn btn-primary">Lưu</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- JS -->
+@section Scripts {
+    <script>
+            $(document).ready(function () {
+
+            // ===== INIT SELECT2 =====
+            $('#RoomTypeId').select2({
+                dropdownParent: $('#roomModal'),
+                width: '100%',
+                allowClear: true,
+                minimumResultsForSearch: 0
+            });
+            $('#FloorId').select2({
+                dropdownParent: $('#roomModal'),
+                width: '100%',
+                allowClear: true,
+                minimumResultsForSearch: 0
+            });
+            $('#amenityList').select2({
+                dropdownParent: $('#roomModal'),
+                width: '100%',
+                placeholder: 'Chọn tiện nghi',
+                allowClear: true
+            });
+
+            // ===== CREATE =====
+            $("#btnAddNew").on("click", function () {
+
+                $("#Id").val(0);
+                $("#RoomNumber").val("");
+                $("#FloorId").val(null).trigger('change');
+                $("#RoomTypeId").val(null).trigger('change');
+                $("#RoomImages").val("");
+                $("#imagePreview").empty();
+
+               $("#Status").val(1).prop("disabled", true);
+
+                loadRoomTypeDropdown();
+                loadFloorDropdown();
+                loadAmenities();
+
+                $('#IsActive').prop('checked', true); // mặc định hoạt động
+
+                $('.updateFields').hide(); // hiện field update
+                $('.updateFields :input').prop('disabled', true); // disable field update
+
+                $("#modalTitle").text("Thêm loại phòng");
+
+                var modal = new bootstrap.Modal(document.getElementById('roomModal'));
+                modal.show();
+            });
+
+            // ===== PREVIEW IMAGES =====
+            $("#RoomImages").on("change", function () {
+                const preview = $("#imagePreview");
+                preview.empty();
+                const files = this.files;
+                if (files.length > 5) {
+                    Swal.fire("Cảnh báo", "Bạn chỉ được chọn tối đa 5 ảnh", "warning");
+                    this.value = "";
+                    return;
+                }
+                for (let i = 0; i < files.length; i++) {
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        preview.append(`<img src="${e.target.result}" style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px; border: 1px solid #ddd;">`);
+                    }
+                    reader.readAsDataURL(files[i]);
+                }
+            });
+
+            // ===== SAVE =====
+            $("#btnSave").on("click", function () {
+
+                var id = Number($("#Id").val());
+                var amenityIds = $("#amenityList").val() || [];
+                
+                var formData = new FormData();
+                formData.append("Id", id);
+                formData.append("RoomNumber", $("#RoomNumber").val());
+                formData.append("FloorId", $("#FloorId").val());
+                formData.append("RoomTypeId", $("#RoomTypeId").val());
+                formData.append("Status", $("#Status").val());
+                formData.append("IsActive", $('#IsActive').prop('checked'));
+                
+                amenityIds.forEach(val => formData.append("AmenityIds", val));
+                
+                const files = $("#RoomImages")[0].files;
+                for (let i = 0; i < files.length; i++) {
+                    formData.append("Images", files[i]);
+                }
+
+                var isUpdate = id > 0;
+
+                $.ajax({
+                    url: isUpdate
+                        ? "/Admin/Rooms/Update"
+                        : "/Admin/Rooms/Create",
+
+                    type: "POST", // Use POST for both when using FormData
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+
+                    success: function (res) {
+                        if (res.status === 200) {
+                            bootstrap.Modal.getInstance(document.getElementById('roomModal')).hide();
+                            Swal.fire({
+                                icon: "success",
+                                title: "Thành công!",
+                                text: isUpdate ? "Cập nhật thành công" : "Thêm thành công"
+                            }).then(() => location.reload());
+                        }
+                        else {
+                            Swal.fire("Lỗi", res.message, "error");
+                        }
+                    },
+                    error: function () {
+                        Swal.fire("Lỗi", "Có lỗi xảy ra", "error");
+                    }
+                });
+            });
+
+        });
+
+               // ===== EDIT =====
+        function openEdit(id) {
+
+            $.get("/Admin/Rooms/GetById/" + id, function (res) {
+
+                $("#Id").val(res.id);
+                $("#RoomNumber").val(res.roomNumber);
+
+                loadRoomTypeDropdown(res.roomTypeId);
+                loadFloorDropdown(res.floorId);
+                loadAmenities(res.amenityIds);
+
+                $("#Status").val(res.status).trigger('change');
+                $('#IsActive').prop('checked', res.isActive);
+                
+                $("#RoomImages").val("");
+                const preview = $("#imagePreview");
+                preview.empty();
+                if (res.images && res.images.length > 0) {
+                    res.images.forEach(img => {
+                        preview.append(`<img src="${img}" style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px; border: 1px solid #ddd;">`);
+                    });
+                }
+
+                $('.updateFields').show();
+                $('.updateFields :input').prop('disabled', false);
+
+                $("#modalTitle").text("Cập nhật phòng");
+
+                var modal = new bootstrap.Modal(document.getElementById('roomModal'));
+                modal.show();
+            });
+        }
+
+        // ===== DELETE =====
+            $(document).on("click", ".btn-delete", function () {
+            var id = $(this).data("id");
+
+            Swal.fire({
+                title: "Bạn chắc chắn?",
+                text: "Không thể hoàn tác!",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonText: "Xóa",
+                cancelButtonText: "Hủy"
+            }).then((result) => {
+
+                if (result.isConfirmed) {
+
+                    $.ajax({
+                        url: "/Admin/Rooms/Delete/",
+                        type: "DELETE",
+                        data : {id : id},
+                        success: function () {
+
+                            Swal.fire("Đã xóa!", "", "success")
+                                .then(() => location.reload());
+                        }
+                    });
+
+                }
+            });
+        });
+
+        // ===== LOAD ROOM TYPE =====
+        function loadRoomTypeDropdown(selectedValue = null) {
+
+            const select = $("#RoomTypeId");
+            select.empty();
+            select.append('<option value="">Chọn loại phòng</option>');
+
+            $.get("/Admin/RoomTypes/GetRoomTypes", function (res) {
+
+                if (res.status === 200 && res.resources) {
+
+                    res.resources.forEach(o => {
+                        select.append(new Option(o.text, o.value));
+                    });
+
+                    if (selectedValue !== null) {
+                        select.val(selectedValue).trigger('change.select2');
+                    }
+                }
+            });
+        }
+        // ===== LOAD FLOOR =====
+        function loadFloorDropdown(selectedValue = null) {
+
+            const select = $("#FloorId");
+            select.empty();
+            select.append('<option value="">Chọn tầng</option>');
+
+            $.get("/Admin/Floors/GetFloors", function (res) {
+
+                if (res.status === 200 && res.resources) {
+
+                    res.resources.forEach(o => {
+                        select.append(new Option(o.text, o.value));
+                    });
+
+                    if (selectedValue !== null) {
+                        select.val(selectedValue).trigger('change.select2');
+                    }
+                }
+            });
+        }
+
+        // ======== LOAD AMENITY ==========
+        function loadAmenities(selectedAmenities = []) {
+
+            const select = $("#amenityList");
+            select.empty();
+
+            $.get("/Admin/Amenities/GetAmenities", function (res) {
+
+                if (res.status === 200 && res.resources) {
+
+                    res.resources.forEach(a => {
+                        select.append(new Option(a.text, a.value));
+                    });
+
+                    if (selectedAmenities.length > 0) {
+                        select.val(selectedAmenities).trigger('change');
+                    }
+                }
+            });
+        }
+    </script>
+}

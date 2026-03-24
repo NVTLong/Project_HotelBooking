@@ -1,0 +1,261 @@
+@model IEnumerable<Project_HotelBooking.Application.DTOs.Floor.FloorDto>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<button type="button" class="btn btn-primary me-2" id="btnAddNew">
+    <span class="svg-icon svg-icon svg-icon-1 svg_plus p-0"></span> Thêm mới
+</button>
+<div class="table-scroll mt-2">
+    <table class="table table-bordered">
+        <thead>
+            <tr class="text-center">
+                <th>Tên tầng</th>
+                <th>Tầng</th>
+                <th>Hành động</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.FloorName</td>
+                    <td>@item.FloorNumber</td>
+                    <td class="text-center">
+
+                        <i class="bi bi-pencil-square fs-3 text-warning me-3 action-icon btn-edit"
+                           onclick="openEdit(@item.Id)"
+                           title="Edit"></i>
+
+                        @* <i class="bi bi-eye-fill fs-3 text-info me-3 action-icon btn-detail"
+                           data-id="@item.Id"
+                           title="Details"></i> *@
+
+                        <i class="bi bi-trash fs-3 text-danger action-icon btn-delete"
+                           data-id="@item.Id"
+                           title="Delete"></i>
+
+                    </td>
+                </tr>
+            }
+
+        </tbody>
+    </table>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="floorModal" tabindex="-1" data-bs-backdrop="static" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalTitle"></h5>
+                <i class="bi bi-x-lg" data-bs-dismiss="modal" style="cursor: pointer;"></i>
+            </div>
+
+            <div class="modal-body">
+
+                <!-- Hidden Id để phân biệt Create / Edit -->
+                <input type="hidden" id="Id" name="Id" />
+
+                <div class="mb-3">
+                    <label>Tên tầng</label>
+                    <input type="text" id="FloorName" name="FloorName" class="form-control" />
+                </div>
+
+                <div class="mb-3">
+                    <label>Số tầng</label>
+                    <input type="text" id="FloorNumber" name="FloorNumber" class="form-control" />
+                </div>
+
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="submit" id="btnSaveRoom" class="btn btn-primary">Lưu</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- JS -->
+@section Scripts {
+    <script>
+            $(document).ready(function () {
+
+            // ===== CREATE =====
+            $("#btnAddNew").on("click", function () {
+
+                $("#Id").val(0);
+                $("#FloorName").val("");
+                $("#FloorNumber").val("");
+
+                $("#modalTitle").text("Thêm tầng");
+
+                var modal = new bootstrap.Modal(document.getElementById('floorModal'));
+                modal.show();
+            });
+
+
+            // ===== SAVE =====
+            $("#btnSaveRoom").on("click", function () {
+
+                var id = Number($("#Id").val());
+
+                var payload = {
+                    Id: id,
+                    FloorName: $("#FloorName").val(),
+                    FloorNumber: $("#FloorNumber").val(),
+                };
+
+                var isUpdate = id > 0;
+
+                $.ajax({
+                    url: isUpdate
+                        ? "/Admin/Floors/Update"
+                        : "/Admin/Floors/Create",
+
+                    type: isUpdate ? "PUT" : "POST",
+                    contentType: "application/json",
+                    data: JSON.stringify(payload),
+
+                    success: function (res) {
+
+                        if (res.status === 200) {
+
+                            bootstrap.Modal.getInstance(document.getElementById('floorModal')).hide();
+
+                            Swal.fire({
+                                icon: "success",
+                                title: "Thành công!",
+                                text: isUpdate ? "Cập nhật thành công" : "Thêm thành công"
+                            }).then(() => location.reload());
+                        }
+                        else {
+                            Swal.fire("Lỗi", res.message, "error");
+                        }
+                    },
+                    error: function () {
+                        Swal.fire("Lỗi", "Có lỗi xảy ra", "error");
+                    }
+                });
+            });
+
+        });
+
+
+        // ===== EDIT =====
+        function openEdit(id) {
+
+            $.get("/Admin/Floors/GetById/" + id, function (res) {
+
+                $("#Id").val(res.id);
+                $("#FloorName").val(res.floorName);
+                $("#FloorNumber").val(res.floorNumber);
+
+                $("#modalTitle").text("Cập nhật tầng");
+
+                var modal = new bootstrap.Modal(document.getElementById('floorModal'));
+                modal.show();
+            });
+        }
+
+        // ===== DELETE =====
+            $(document).on("click", ".btn-delete", function () {
+            var id = $(this).data("id");
+
+            Swal.fire({
+                title: "Bạn chắc chắn?",
+                text: "Không thể hoàn tác!",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonText: "Xóa",
+                cancelButtonText: "Hủy"
+            }).then((result) => {
+
+                if (result.isConfirmed) {
+
+                    $.ajax({
+                        url: "/Admin/Floors/Delete/",
+                        type: "DELETE",
+                        data : {id : id},
+                        success: function () {
+
+                            Swal.fire("Đã xóa!", "", "success")
+                                .then(() => location.reload());
+                        }
+                    });
+
+                }
+            });
+        });
+
+    </script>
+}
+<style>
+    .action-icon {
+        font-size: 24px;
+        padding: 6px;
+        border-radius: 6px;
+        transition: 0.2s;
+    }
+
+        .action-icon:hover {
+            filter: brightness(70%);
+        }
+    /* SELECT2 & INPUT STANDARD */
+    .form-control {
+        border: 1px solid #ced4da !important;
+        cursor: text;
+    }
+
+    /* Fix Select2 height giống Bootstrap */
+    #floorModal .select2-container .select2-selection--single {
+        height: 46px !important;
+        padding: 6px 12px;
+        border: 1px solid #ced4da !important;
+        border-radius: 6px;
+    }
+
+    #floorModal .select2-container--default .select2-selection--single .select2-selection__rendered {
+        line-height: 34px;
+    }
+
+    #floorModal .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 46px;
+    }
+
+
+    /* CSS Badge*/
+    .status-badge {
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 500;
+        display: inline-block;
+    }
+
+    /* Màu giống hình */
+
+    .status-active {
+        background-color: #e7e8ff;
+        color: #5a67ff;
+    }
+
+    .status-completed {
+        background-color: #e6f7ed;
+        color: #28a745;
+    }
+
+    .status-scheduled {
+        background-color: #e6f4ff;
+        color: #17a2b8;
+    }
+
+    .status-pending {
+        background-color: #fff4e6;
+        color: #ff9800;
+    }
+
+</style>

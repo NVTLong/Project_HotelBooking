@@ -1,0 +1,409 @@
+@model Project_HotelBooking.Application.DTOs.Room.RoomDto
+
+@{
+    ViewData["Title"] = $"Phòng {Model.RoomNumber} - {Model.RoomTypeName}";
+}
+
+<style>
+    .details-hero {
+        height: 60vh;
+        min-height: 400px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .details-hero img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .details-hero::after {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: linear-gradient(to top, rgba(15, 23, 42, 0.8) 0%, transparent 50%);
+    }
+
+    .hero-text {
+        position: absolute;
+        bottom: 40px;
+        left: 0;
+        width: 100%;
+        color: #fff;
+        z-index: 2;
+    }
+
+    .amenity-badge {
+        background: #f1f5f9;
+        color: var(--primary-navy);
+        padding: 10px 20px;
+        border-radius: 12px;
+        font-size: 0.9rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        margin-right: 10px;
+        margin-bottom: 10px;
+        transition: all 0.3s;
+    }
+
+    .amenity-badge:hover {
+        background: var(--accent-gold);
+        transform: translateY(-3px);
+    }
+
+    .booking-sidebar {
+        background: #fff;
+        border-radius: 20px;
+        padding: 30px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        position: sticky;
+        top: 100px;
+    }
+
+    .price-large {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: var(--primary-navy);
+        margin-bottom: 5px;
+    }
+
+    .btn-book-now {
+        background: var(--primary-navy);
+        color: #fff;
+        border: none;
+        border-radius: 12px;
+        padding: 15px;
+        font-weight: 700;
+        width: 100%;
+        margin-top: 20px;
+        transition: all 0.3s;
+    }
+
+    .btn-book-now:hover {
+        background: var(--accent-gold);
+        color: var(--primary-navy);
+        transform: scale(1.02);
+    }
+
+    .thumbnail-gallery {
+        display: flex;
+        gap: 10px;
+        margin-top: 20px;
+        overflow-x: auto;
+        padding-bottom: 10px;
+    }
+
+    .thumbnail-img {
+        width: 100px;
+        height: 70px;
+        border-radius: 8px;
+        object-fit: cover;
+        cursor: pointer;
+        opacity: 0.6;
+        transition: 0.3s;
+    }
+
+    .thumbnail-img.active, .thumbnail-img:hover {
+        opacity: 1;
+        border: 2px solid var(--accent-gold);
+    }
+</style>
+
+<div class="details-hero">
+    @{
+        var mainImg = Model.RoomImages?.FirstOrDefault(x => x.IsPrimary)?.ImageUrl 
+                   ?? Model.RoomImages?.FirstOrDefault()?.ImageUrl
+                   ?? "https://images.unsplash.com/photo-1590490360182-c33d57733427?q=80&w=1920&auto=format&fit=crop";
+    }
+    <img id="mainImage" src="@mainImg" alt="Phòng @Model.RoomNumber">
+    <div class="hero-text">
+        <div class="container">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-2">
+                    <li class="breadcrumb-item"><a href="/" class="text-white-50 text-decoration-none">Trang chủ</a></li>
+                    <li class="breadcrumb-item"><a href="/Room/Index" class="text-white-50 text-decoration-none">Phòng nghỉ</a></li>
+                    <li class="breadcrumb-item active text-white" aria-current="page">Phòng @Model.RoomNumber</li>
+                </ol>
+            </nav>
+            <h1 class="display-4 fw-bold" style="font-family: 'Playfair Display', serif;">Phòng @Model.RoomNumber (@Model.RoomTypeName)</h1>
+        </div>
+    </div>
+</div>
+
+<div class="container py-5">
+    <div class="row g-5">
+        <div class="col-lg-8">
+            <div class="thumbnail-gallery mb-5">
+                @if (Model.RoomImages != null)
+                {
+                    foreach (var img in Model.RoomImages)
+                    {
+                        <img src="@img.ImageUrl" class="thumbnail-img @(img.IsPrimary ? "active" : "")" onclick="document.getElementById('mainImage').src='@img.ImageUrl'; $('.thumbnail-img').removeClass('active'); $(this).addClass('active');" alt="Gallery">
+                    }
+                }
+            </div>
+
+            <h3 class="fw-bold mb-4" style="font-family: 'Playfair Display', serif;">Mô tả chi tiết</h3>
+            <p class="fs-5 text-muted mb-5 fw-light" style="line-height: 1.8;">Trải nghiệm sự sang trọng hoàn hảo tại Phòng @Model.RoomNumber. Với nội thất hiện đại, không gian thoáng đãng và dịch vụ cao cấp, chúng tôi cam kết mang lại cho bạn kỳ nghỉ đáng nhớ nhất.</p>
+
+            <h3 class="fw-bold mb-4" style="font-family: 'Playfair Display', serif;">Tiện nghi & Dịch vụ</h3>
+            <div class="mb-5">
+                <div class="amenity-badge"><i class="bi bi-building fs-5"></i>@Model.FloorName</div>
+                <div class="amenity-badge"><i class="bi bi-arrows-fullscreen fs-5"></i> Không gian rộng rãi</div>
+                <div class="amenity-badge"><i class="bi bi-wifi fs-5"></i> Wifi miễn phí</div>
+                <div class="amenity-badge"><i class="bi bi-cup-hot fs-5"></i> Dịch vụ phòng 24/7</div>
+            </div>
+
+            @if (Model.RoomImages != null && Model.RoomImages.Count > 1)
+            {
+                <h3 class="fw-bold mb-4" style="font-family: 'Playfair Display', serif;">Bộ sưu tập hình ảnh</h3>
+                <div class="row g-3">
+                    @foreach (var img in Model.RoomImages.Skip(1))
+                    {
+                        <div class="col-md-6">
+                            <img src="@img.ImageUrl" class="img-fluid rounded-4 shadow-sm" alt="Gallery Large" style="height: 250px; width: 100%; object-fit: cover;">
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+
+        <div class="col-lg-4">
+            <div class="booking-sidebar">
+                <p class="text-muted small text-uppercase fw-bold mb-1">Giá từ</p>
+                <div class="price-large">@Model.Price.ToString("N0")đ <span class="fs-6 text-muted fw-normal">/ đêm</span></div>
+                <hr class="my-4">
+                
+                <div class="mb-4">
+                    <label class="small fw-bold text-uppercase text-muted mb-2 d-block">Đánh giá khách hàng</label>
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="text-warning fs-5">
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-half"></i>
+                        </div>
+                        <span class="fw-bold">4.8/5</span>
+                        <span class="text-muted small">(120 đánh giá)</span>
+                    </div>
+                </div>
+
+                <div class="alert alert-warning border-0 rounded-4 p-3 small">
+                    <i class="bi bi-lightning-fill me-2"></i> Còn <strong>3 phòng</strong> trống cho ngày bạn chọn!
+                </div>
+
+                <button class="btn btn-book-now">
+                    ĐẶT PHÒNG NGAY <i class="bi bi-arrow-right ms-2"></i>
+                </button>
+                <p class="text-center mt-3 small text-muted">Hỗ trợ nhanh: <strong>+84 123 456 789</strong></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Swiper.js CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+
+    <!-- Segmented Suggestions Section -->
+    @{
+        var samePriceRooms = ViewBag.SamePriceRooms as IEnumerable<Project_HotelBooking.Application.DTOs.Room.RoomDto>;
+        var otherTypeRooms = ViewBag.OtherTypeRooms as IEnumerable<Project_HotelBooking.Application.DTOs.Room.RoomDto>;
+    }
+
+    <!-- 1. Same Price, Different Floor -->
+    @if (samePriceRooms != null && samePriceRooms.Any())
+    {
+        <div class="mt-5 pt-5 pb-4 border-top position-relative">
+            <div class="d-flex justify-content-between align-items-end mb-4">
+                <div>
+                    <h6 class="text-uppercase fw-bold text-warning mb-2" style="letter-spacing: 2px; font-size: 0.8rem;">Trải nghiệm tương tự</h6>
+                    <h2 class="fw-bold m-0" style="font-family: 'Playfair Display', serif;">Phòng cùng giá - Khác tầng</h2>
+                </div>
+                <div class="d-flex gap-2">
+                    <div class="swiper-button-prev-custom same-price-prev"><i class="bi bi-chevron-left"></i></div>
+                    <div class="swiper-button-next-custom same-price-next"><i class="bi bi-chevron-right"></i></div>
+                </div>
+            </div>
+
+            <div class="swiper samePriceSwiper">
+                <div class="swiper-wrapper mb-5">
+                    @foreach (var item in samePriceRooms)
+                    {
+                        <div class="swiper-slide">
+                            <div class="room-card suggestion-card-item h-100">
+                                <div class="room-image" style="height: 200px; position: relative; overflow: hidden;">
+                                    @{
+                                        var sugImg = item.RoomImages?.FirstOrDefault(x => x.IsPrimary)?.ImageUrl 
+                                                   ?? item.RoomImages?.FirstOrDefault()?.ImageUrl
+                                                   ?? "https://images.unsplash.com/photo-1590490360182-c33d57733427?q=80&w=800&auto=format&fit=crop";
+                                    }
+                                    <img src="@sugImg" class="w-100 h-100 object-fit-cover transition-transform" style="transition: transform 0.5s ease;" alt="Phòng @item.RoomNumber">
+                                    <div class="price-tag" style="position: absolute; bottom: 15px; right: 15px; background: var(--accent-gold); color: var(--primary-navy); padding: 5px 12px; border-radius: 6px; font-weight: 700; font-size: 0.9rem;">
+                                        @item.Price.ToString("N0")đ
+                                    </div>
+                                </div>
+                                <div class="room-content p-4">
+                                    <h5 class="fw-bold mb-1">Phòng @item.RoomNumber</h5>
+                                    <div class="text-muted small mb-3">
+                                        <span class="me-3"><i class="bi bi-tag me-1 text-warning"></i> @item.RoomTypeName</span>
+                                        <span><i class="bi bi-building me-1 text-warning"></i>@item.FloorName</span>
+                                    </div>
+                                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-details w-100">XEM CHI TIẾT <i class="bi bi-arrow-right ms-2"></i></a>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+                <!-- Add Pagination -->
+                <div class="swiper-pagination same-price-pagination"></div>
+            </div>
+        </div>
+    }
+
+    <!-- 2. Other Room Types -->
+    @if (otherTypeRooms != null && otherTypeRooms.Any())
+    {
+        <div class="mt-5 pb-5 position-relative">
+            <div class="d-flex justify-content-between align-items-end mb-4">
+                <div>
+                    <h6 class="text-uppercase fw-bold text-warning mb-2" style="letter-spacing: 2px; font-size: 0.8rem;">Đa dạng lựa chọn</h6>
+                    <h2 class="fw-bold m-0" style="font-family: 'Playfair Display', serif;">Khám phá các loại phòng khác</h2>
+                </div>
+                <div class="d-flex gap-2">
+                    <div class="swiper-button-prev-custom other-types-prev"><i class="bi bi-chevron-left"></i></div>
+                    <div class="swiper-button-next-custom other-types-next"><i class="bi bi-chevron-right"></i></div>
+                </div>
+            </div>
+
+            <div class="swiper otherTypesSwiper">
+                <div class="swiper-wrapper mb-5">
+                    @foreach (var item in otherTypeRooms)
+                    {
+                        <div class="swiper-slide">
+                            <div class="room-card suggestion-card-item h-100">
+                                <div class="room-image" style="height: 200px; position: relative; overflow: hidden;">
+                                    @{
+                                        var sugImg = item.RoomImages?.FirstOrDefault(x => x.IsPrimary)?.ImageUrl 
+                                                   ?? item.RoomImages?.FirstOrDefault()?.ImageUrl
+                                                   ?? "https://images.unsplash.com/photo-1590490360182-c33d57733427?q=80&w=800&auto=format&fit=crop";
+                                    }
+                                    <img src="@sugImg" class="w-100 h-100 object-fit-cover transition-transform" style="transition: transform 0.5s ease;" alt="Phòng @item.RoomNumber">
+                                    <div class="price-tag" style="position: absolute; bottom: 15px; right: 15px; background: var(--accent-gold); color: var(--primary-navy); padding: 5px 12px; border-radius: 6px; font-weight: 700; font-size: 0.9rem;">
+                                        @item.Price.ToString("N0")đ
+                                    </div>
+                                </div>
+                                <div class="room-content p-4">
+                                    <h5 class="fw-bold mb-1">Phòng @item.RoomNumber (@item.RoomTypeName)</h5>
+                                    <div class="text-muted small mb-3">
+                                        <span class="me-3"><i class="bi bi-tag me-1 text-warning"></i> @item.RoomTypeName</span>
+                                        <span><i class="bi bi-building me-1 text-warning"></i>@item.FloorName</span>
+                                    </div>
+                                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-details w-100">XEM CHI TIẾT <i class="bi bi-arrow-right ms-2"></i></a>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+                <!-- Add Pagination -->
+                <div class="swiper-pagination other-types-pagination"></div>
+            </div>
+        </div>
+    }
+</div>
+
+<style>
+    .suggestion-card-item {
+        border: 1px solid #f1f5f9;
+        background: #fff;
+        border-radius: 16px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
+    
+    .suggestion-card-item:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+    }
+
+    .suggestion-card-item:hover img {
+        transform: scale(1.1);
+    }
+
+    .swiper-button-prev-custom, .swiper-button-next-custom {
+        width: 40px;
+        height: 40px;
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: 0.3s;
+        color: var(--primary-navy);
+        z-index: 10;
+    }
+
+    .swiper-button-prev-custom:hover, .swiper-button-next-custom:hover {
+        background: var(--primary-navy);
+        color: #fff;
+        border-color: var(--primary-navy);
+    }
+
+    .swiper-button-disabled {
+        opacity: 0.3;
+        cursor: not-allowed;
+    }
+
+    .swiper-pagination-bullet-active {
+        background: var(--accent-gold) !important;
+    }
+</style>
+
+@section Scripts {
+    <!-- Swiper.js JS -->
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            const swiperOptions = {
+                slidesPerView: 1,
+                spaceBetween: 24,
+                loop: false,
+                breakpoints: {
+                    768: {
+                        slidesPerView: 2,
+                    },
+                    1024: {
+                        slidesPerView: 3,
+                    }
+                }
+            };
+
+            const samePriceSwiper = new Swiper('.samePriceSwiper', {
+                ...swiperOptions,
+                navigation: {
+                    nextEl: '.same-price-next',
+                    prevEl: '.same-price-prev',
+                },
+                pagination: {
+                    el: '.same-price-pagination',
+                    clickable: true,
+                },
+            });
+
+            const otherTypesSwiper = new Swiper('.otherTypesSwiper', {
+                ...swiperOptions,
+                navigation: {
+                    nextEl: '.other-types-next',
+                    prevEl: '.other-types-prev',
+                },
+                pagination: {
+                    el: '.other-types-pagination',
+                    clickable: true,
+                },
+            });
+        });
+    </script>
+}
