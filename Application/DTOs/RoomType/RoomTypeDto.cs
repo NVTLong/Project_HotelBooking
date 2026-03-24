@@ -1,4 +1,4 @@
-﻿namespace Project_HotelBooking.Application.DTOs.RoomType
+namespace Project_HotelBooking.Application.DTOs.RoomType
 {
     public class RoomTypeDto
     {
@@ -8,6 +8,8 @@
         public int Capacity { get; set; }
         public string? Description { get; set; }
         public bool IsActive { get; set; }
+        public List<RoomTypeImageDto>? RoomTypeImages { get; set; }
+        public List<string>? Amenities { get; set; }
     }
 
 }

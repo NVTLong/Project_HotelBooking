@@ -55,5 +55,11 @@ namespace Project_HotelBooking.Repository
         {
             return await _context.Customers.AnyAsync(predicate);
         }
+
+        public async Task<Customer?> GetByEmailAsync(string email)
+        {
+            return await _context.Customers
+                .FirstOrDefaultAsync(x => x.Email == email);
+        }
     }
 }

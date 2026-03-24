@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Project_HotelBooking.Application.DTOs.Room;
 using Project_HotelBooking.Application.Interfaces.Service;
 using Project_HotelBooking.Application.Services;
@@ -13,10 +13,13 @@ namespace Project_HotelBooking.Areas.Admin.Controllers
     {
         private readonly IRoomService _roomService;
         private readonly IRoomTypeService _roomTypeService;
-        public RoomsController(IRoomService roomService , IRoomTypeService roomTypeService)
+        private readonly IWebHostEnvironment _webHostEnvironment;
+
+        public RoomsController(IRoomService roomService, IRoomTypeService roomTypeService, IWebHostEnvironment webHostEnvironment)
         {
             _roomService = roomService;
             _roomTypeService = roomTypeService;
+            _webHostEnvironment = webHostEnvironment;
         }
         public async Task<IActionResult> Index()
         {
@@ -33,6 +36,7 @@ namespace Project_HotelBooking.Areas.Admin.Controllers
             {
                 return NotFound();
             }
+
             return Json(new
             {
                 id = room.Id,
@@ -41,17 +45,20 @@ namespace Project_HotelBooking.Areas.Admin.Controllers
                 floorId = room.FloorId,
                 status = room.Status,
                 isActive = room.IsActive,
-                amenityIds = room.AmenityIds
+                amenityIds = room.AmenityIds,
+                images = room.RoomImages?.Select(x => x.ImageUrl).ToList()
             });
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] RoomVM vm)
+        public async Task<IActionResult> Create([FromForm] RoomVM vm)
         {
             if (!ModelState.IsValid)
             {
                 return Json(new { status = 400, message = "Dữ liệu không hợp lệ" });
             }
+
+            var imageUrls = await SaveImages(vm.Images);
 
             var dto = new RoomCreateDto
             {
@@ -60,9 +67,10 @@ namespace Project_HotelBooking.Areas.Admin.Controllers
                 FloorId = vm.FloorId,
                 Status = vm.Status,
                 IsActive = vm.IsActive,
-                AmenityIds = vm.AmenityIds
-
+                AmenityIds = vm.AmenityIds,
+                ImageUrls = imageUrls
             };
+
             var userIdCreate = int.Parse(
                 User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier).Value
             );
@@ -71,13 +79,15 @@ namespace Project_HotelBooking.Areas.Admin.Controllers
             return Json(new { status = 200, message = "Tạo phòng thành công" });
         }
 
-        [HttpPut]
-        public async Task<IActionResult> Update([FromBody] RoomVM model)
+        [HttpPost] // Use Post for both Create/Update when using FormData
+        public async Task<IActionResult> Update([FromForm] RoomVM model)
         {
             if (!ModelState.IsValid)
             {
                 return Json(new { status = 400, message = "Dữ liệu không hợp lệ" });
             }
+
+            var imageUrls = await SaveImages(model.Images);
 
             var dto = new RoomUpdateDto
             {
@@ -87,7 +97,8 @@ namespace Project_HotelBooking.Areas.Admin.Controllers
                 RoomTypeId = model.RoomTypeId,
                 Status = model.Status,
                 IsActive = model.IsActive,
-                AmenityIds= model.AmenityIds
+                AmenityIds = model.AmenityIds,
+                ImageUrls = imageUrls.Any() ? imageUrls : null
             };
 
             var userId = int.Parse(
@@ -97,6 +108,30 @@ namespace Project_HotelBooking.Areas.Admin.Controllers
             await _roomService.UpdateAsync(dto, userId);
 
             return Json(new { status = 200, message = "Cập nhật thành công" });
+        }
+
+        private async Task<List<string>> SaveImages(List<IFormFile>? images)
+        {
+            var urls = new List<string>();
+            if (images == null || !images.Any()) return urls;
+
+            string uploadDir = Path.Combine(_webHostEnvironment.WebRootPath, "uploads", "rooms");
+            if (!Directory.Exists(uploadDir)) Directory.CreateDirectory(uploadDir);
+
+            foreach (var image in images)
+            {
+                if (image.Length > 0)
+                {
+                    string fileName = Guid.NewGuid().ToString() + Path.GetExtension(image.FileName);
+                    string filePath = Path.Combine(uploadDir, fileName);
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await image.CopyToAsync(stream);
+                    }
+                    urls.Add("/uploads/rooms/" + fileName);
+                }
+            }
+            return urls;
         }
 
         [HttpDelete]

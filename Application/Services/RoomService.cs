@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using Project_HotelBooking.Application.DTOs.Room;
 using Project_HotelBooking.Application.DTOs.RoomType;
 using Project_HotelBooking.Application.Interfaces.Repository;
@@ -13,13 +13,16 @@ namespace Project_HotelBooking.Application.Services
     {
         private readonly IRoomRepository _roomRepository;
         private readonly IRoomAmenityRepository _roomAmenityRepository;
+        private readonly IRoomImageRepository _roomImageRepository;
         private readonly IMapper _mapper;
         public RoomService(IRoomRepository roomRepository, 
                             IRoomAmenityRepository roomAmenityRepository,
+                            IRoomImageRepository roomImageRepository,
                             IMapper mapper)
         {
             _roomRepository = roomRepository;
             _roomAmenityRepository = roomAmenityRepository;
+            _roomImageRepository = roomImageRepository;
             _mapper = mapper;
         }
         public async Task<IEnumerable<RoomDto>> GetAllAsync()
@@ -40,6 +43,11 @@ namespace Project_HotelBooking.Application.Services
             dto.AmenityIds = room.RoomAmenities
                 .Select(x => x.AmenityId)
                 .ToList();
+
+            if (room.RoomImages != null)
+            {
+                dto.RoomImages = _mapper.Map<List<RoomImageDto>>(room.RoomImages);
+            }
 
             return dto;
         }
@@ -77,6 +85,21 @@ namespace Project_HotelBooking.Application.Services
                     await _roomAmenityRepository.CreateAsync(roomAmenity);
                 }
             }
+
+            // ===== LƯU ROOM IMAGES =====
+            if (roomCreateDto.ImageUrls != null)
+            {
+                foreach (var url in roomCreateDto.ImageUrls)
+                {
+                    var roomImage = new RoomImage
+                    {
+                        RoomId = room.Id,
+                        ImageUrl = url,
+                        IsPrimary = url == roomCreateDto.ImageUrls.First()
+                    };
+                    await _roomImageRepository.CreateAsync(roomImage);
+                }
+            }
         }
 
         public async Task UpdateAsync(RoomUpdateDto roomUpdateDto, int userId)
@@ -111,6 +134,22 @@ namespace Project_HotelBooking.Application.Services
                     await _roomAmenityRepository.CreateAsync(roomAmenity);
                 }
             }
+
+            // ===== CẬP NHẬT ROOM IMAGES =====
+            if (roomUpdateDto.ImageUrls != null && roomUpdateDto.ImageUrls.Any())
+            {
+                await _roomImageRepository.DeleteByRoomId(room.Id);
+                foreach (var url in roomUpdateDto.ImageUrls)
+                {
+                    var roomImage = new RoomImage
+                    {
+                        RoomId = room.Id,
+                        ImageUrl = url,
+                        IsPrimary = url == roomUpdateDto.ImageUrls.First()
+                    };
+                    await _roomImageRepository.CreateAsync(roomImage);
+                }
+            }
         }
         public async Task DeleteAsync(int id)
         {
@@ -133,5 +172,83 @@ namespace Project_HotelBooking.Application.Services
                 .ToList();
         }
 
+        public async Task<IEnumerable<RoomDto>> GetAvailableRoomsAsync(DateTime checkIn, DateTime checkOut, int guests)
+        {
+            var rooms = await _roomRepository.GetAvailableRoomsWithBookingsAsync();
+
+            var availableRooms = rooms
+                .Where(r => r.IsActive && r.RoomType!.Capacity >= guests)
+                .Where(r => !r.BookingDetails!.Any(bd =>
+                    bd.Booking!.Status != Enums.BookingStatus.Cancelled &&
+                    !(bd.Booking.CheckOutDate <= checkIn || bd.Booking.CheckInDate >= checkOut)
+                ))
+                .ToList();
+
+            var dtos = _mapper.Map<IEnumerable<RoomDto>>(availableRooms);
+            
+            // Map RoomImages separately if needed, though Automapper should handle it if configured
+            foreach(var dto in dtos)
+            {
+                var room = availableRooms.First(x => x.Id == dto.Id);
+                if (room.RoomImages != null)
+                {
+                    dto.RoomImages = _mapper.Map<List<RoomImageDto>>(room.RoomImages);
+                }
+            }
+
+            return dtos;
+        }
+
+        public async Task<IEnumerable<RoomDto>> GetSuggestionsAsync(int currentRoomId, int limit = 3)
+        {
+            var currentRoom = await _roomRepository.GetByIdAsync(currentRoomId);
+            if (currentRoom == null) return Enumerable.Empty<RoomDto>();
+
+            var allRooms = await _roomRepository.GetAvailableRoomsWithBookingsAsync();
+            
+            // Lấy các phòng khác cùng loại hoặc khác, ưu tiên cùng loại
+            var suggestions = allRooms
+                .Where(r => r.Id != currentRoomId && r.IsActive && r.Status == RoomStatus.Available)
+                .OrderBy(r => r.RoomTypeId == currentRoom.RoomTypeId ? 0 : 1)
+                .Take(limit)
+                .ToList();
+
+            return _mapper.Map<IEnumerable<RoomDto>>(suggestions);
+        }
+
+        public async Task<IEnumerable<RoomDto>> GetRoomsWithSamePriceAsync(int currentRoomId)
+        {
+            var currentRoom = await _roomRepository.GetRoomWithAmenitiesAsync(currentRoomId);
+            if (currentRoom == null) return Enumerable.Empty<RoomDto>();
+
+            var allRooms = await _roomRepository.GetAvailableRoomsWithBookingsAsync();
+            
+            var samePrice = allRooms
+                .Where(r => r.Id != currentRoomId && 
+                            r.IsActive && 
+                            r.RoomType!.BasePrice == currentRoom.RoomType!.BasePrice &&
+                            r.FloorId != currentRoom.FloorId)
+                .ToList();
+
+            return _mapper.Map<IEnumerable<RoomDto>>(samePrice);
+        }
+
+        public async Task<IEnumerable<RoomDto>> GetRoomsOfOtherTypesAsync(int currentRoomId)
+        {
+            var currentRoom = await _roomRepository.GetRoomWithAmenitiesAsync(currentRoomId);
+            if (currentRoom == null) return Enumerable.Empty<RoomDto>();
+
+            var allRooms = await _roomRepository.GetAvailableRoomsWithBookingsAsync();
+            
+            var otherTypes = allRooms
+                .Where(r => r.Id != currentRoomId && 
+                            r.IsActive && 
+                            r.RoomTypeId != currentRoom.RoomTypeId)
+                .GroupBy(r => r.RoomTypeId)
+                .Select(g => g.First()) // Lấy một phòng đại diện cho mỗi loại khác
+                .ToList();
+
+            return _mapper.Map<IEnumerable<RoomDto>>(otherTypes);
+        }
     }
 }

@@ -13,6 +13,7 @@ namespace Project_HotelBooking.Application.Interfaces.Repository
         Task SaveAsync();
         Task<bool> AnyAsync(Expression<Func<Room, bool>> predicate);
         Task<Room?> GetRoomWithAmenitiesAsync(int id);
+        Task<IEnumerable<Room>> GetAvailableRoomsWithBookingsAsync();
 
     }
 }

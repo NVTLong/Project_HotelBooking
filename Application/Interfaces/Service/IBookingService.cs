@@ -1,4 +1,4 @@
-﻿using Project_HotelBooking.Application.DTOs.Booking;
+using Project_HotelBooking.Application.DTOs.Booking;
 
 namespace Project_HotelBooking.Application.Interfaces.Service
 {
@@ -16,6 +16,7 @@ namespace Project_HotelBooking.Application.Interfaces.Service
         Task CheckInAsync(int bookingId, int userId);
         Task CheckOutAsync(int bookingId, int userId);
         Task ConfirmAsync(int bookingId, int userId);
+        Task<IEnumerable<BookingDto>> GetByCustomerIdAsync(int customerId);
     }
 
 }

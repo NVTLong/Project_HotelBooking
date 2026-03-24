@@ -12,9 +12,13 @@ namespace Project_HotelBooking.Application.Interfaces.Repository
         Task CreateAsync(Customer customer);
 
         Task UpdateAsync(Customer customer);
+        Task<Customer?> GetByEmailAsync(string email);
 
         Task DeleteAsync(int id);
+
         Task SaveAsync();
+
         Task<bool> AnyAsync(Expression<Func<Customer, bool>> predicate);
+
     }
 }

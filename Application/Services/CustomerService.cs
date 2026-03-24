@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+using AutoMapper;
+using BCrypt.Net;
 using NuGet.Protocol.Core.Types;
 using Project_HotelBooking.Application.DTOs.Customer;
 using Project_HotelBooking.Application.Interfaces.Repository;
@@ -21,6 +22,12 @@ namespace Project_HotelBooking.Application.Services
         {
             var customers = await _customerRepository.GetAllAsync();
             return _mapper.Map<IEnumerable<CustomerDto>>(customers);
+        }
+
+        public async Task<CustomerDto?> GetByEmailAsync(string email)
+        {
+            var customer = await _customerRepository.GetByEmailAsync(email);
+            return _mapper.Map<CustomerDto?>(customer);
         }
 
         public async Task<CustomerDto?> GetByIdAsync(int id)
@@ -65,6 +72,52 @@ namespace Project_HotelBooking.Application.Services
                 await _customerRepository.DeleteAsync(id);
                 await _customerRepository.SaveAsync();
             }
+        }
+
+        public async Task<CustomerDto> RegisterAsync(CustomerRegisterDto dto)
+        {
+            var exist = await _customerRepository.GetByEmailAsync(dto.Email);
+
+            if (exist != null)
+            {
+                throw new Exception("Email đã tồn tại");
+            }
+
+            var customer = new Customer
+            {
+                FullName = dto.FullName,
+                PhoneNumber = dto.PhoneNumber,
+                Email = dto.Email,
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
+                IsEmailVerified = false,
+                LastLoginAt = DateTime.UtcNow,
+            };
+
+            await _customerRepository.CreateAsync(customer);
+
+            return _mapper.Map<CustomerDto>(customer);
+        }
+
+        public async Task<CustomerDto> LoginAsync(CustomerLoginDto dto)
+        {
+            var customer = await _customerRepository.GetByEmailAsync(dto.Email);
+
+            if (customer == null)
+                throw new Exception("Email không tồn tại");
+
+            if (string.IsNullOrEmpty(customer.PasswordHash))
+                throw new Exception("Tài khoản chưa có mật khẩu");
+
+            bool isValid = BCrypt.Net.BCrypt.Verify(dto.Password, customer.PasswordHash);
+
+            if (!isValid)
+                throw new Exception("Sai mật khẩu");
+
+            customer.LastLoginAt = DateTime.Now;
+
+            await _customerRepository.UpdateAsync(customer);
+
+            return _mapper.Map<CustomerDto>(customer);
         }
     }
 }

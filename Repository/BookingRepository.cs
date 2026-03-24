@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Project_HotelBooking.Application.DTOs.Booking;
 using Project_HotelBooking.Application.Interfaces.Repository;
 using Project_HotelBooking.Data;
@@ -51,6 +51,18 @@ namespace Project_HotelBooking.Repository
             {
                 _context.Bookings.Remove(booking);
             }
+        }
+
+        public async Task<IEnumerable<Booking>> GetByCustomerIdAsync(int customerId)
+        {
+            return await _context.Bookings
+                .Include(x => x.Customer)
+                .Include(x => x.BookingDetails)
+                .ThenInclude(x => x.Room)
+                .ThenInclude(x => x.RoomType)
+                .Where(x => x.CustomerId == customerId)
+                .OrderByDescending(x => x.CreatedAt)
+                .ToListAsync();
         }
 
         public async Task SaveAsync()

@@ -1,4 +1,4 @@
-﻿using Project_HotelBooking.Application.DTOs.Customer;
+using Project_HotelBooking.Application.DTOs.Customer;
 
 namespace Project_HotelBooking.Application.Interfaces.Service
 {
@@ -13,5 +13,10 @@ namespace Project_HotelBooking.Application.Interfaces.Service
         Task UpdateAsync(CustomerUpdateDto dto, int userId);
 
         Task DeleteAsync(int id);
+
+        Task<CustomerDto> RegisterAsync(CustomerRegisterDto dto);
+        Task<CustomerDto> LoginAsync(CustomerLoginDto dto);
+        Task<CustomerDto?> GetByEmailAsync(string email);
+
     }
 }

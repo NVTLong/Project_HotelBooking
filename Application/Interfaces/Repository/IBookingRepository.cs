@@ -13,7 +13,7 @@ namespace Project_HotelBooking.Application.Interfaces.Repository
         Task UpdateAsync(Booking booking);
 
         Task DeleteAsync(int id);
-
+        Task<IEnumerable<Booking>> GetByCustomerIdAsync(int customerId);
         Task SaveAsync();
     }
 }

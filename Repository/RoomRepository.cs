@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Project_HotelBooking.Application.Interfaces.Repository;
 using Project_HotelBooking.Data;
 using Project_HotelBooking.Models;
@@ -61,8 +61,22 @@ namespace Project_HotelBooking.Repository
         public async Task<Room?> GetRoomWithAmenitiesAsync(int id)
         {
             return await _context.Rooms
+                .Include(x => x.RoomType)
+                .Include(x => x.Floor)
                 .Include(x => x.RoomAmenities)
+                .Include(x => x.RoomImages)
                 .FirstOrDefaultAsync(x => x.Id == id);
+        }
+
+        public async Task<IEnumerable<Room>> GetAvailableRoomsWithBookingsAsync()
+        {
+            return await _context.Rooms
+                .Include(r => r.RoomType)
+                .Include(r => r.Floor)
+                .Include(r => r.RoomImages)
+                .Include(r => r.BookingDetails!)
+                    .ThenInclude(bd => bd.Booking)
+                .ToListAsync();
         }
 
     }

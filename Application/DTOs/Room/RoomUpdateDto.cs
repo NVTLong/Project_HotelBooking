@@ -1,4 +1,4 @@
-﻿using Project_HotelBooking.Enums;
+using Project_HotelBooking.Enums;
 
 namespace Project_HotelBooking.Application.DTOs.Room
 {
@@ -14,6 +14,7 @@ namespace Project_HotelBooking.Application.DTOs.Room
 
         public RoomStatus Status { get; set; }
         public List<int>? AmenityIds { get; set; }
+        public List<string>? ImageUrls { get; set; }
         public bool IsActive { get; set; }
     }
 

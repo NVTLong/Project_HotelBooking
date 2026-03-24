@@ -1,4 +1,4 @@
-﻿using Project_HotelBooking.Enums;
+using Project_HotelBooking.Enums;
 
 namespace Project_HotelBooking.ViewModels.Room
 {
@@ -20,5 +20,6 @@ namespace Project_HotelBooking.ViewModels.Room
 
         public string? RoomTypeName { get; set; }
         public List<int>? AmenityIds { get; set; }
+        public List<IFormFile>? Images { get; set; }
     }
 }

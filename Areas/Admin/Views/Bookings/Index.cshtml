@@ -1,4 +1,4 @@
-﻿@using Project_HotelBooking.Enums
+@using Project_HotelBooking.Enums
 @using Project_HotelBooking.Enums.Helper
 @model IEnumerable<Project_HotelBooking.Application.DTOs.Booking.BookingDto>
 
@@ -137,16 +137,22 @@
         font-weight: 500;
     }
 
-    /* SELECT2 */
-    /* Fix Select2 height giống input bootstrap */
+    /* SELECT2 & INPUT STANDARD */
+    .form-control {
+        border: 1px solid #ced4da !important;
+        cursor: text;
+    }
+
+    /* Fix Select2 height giống Bootstrap */
     .select2-container .select2-selection--single {
         height: 46px !important;
         padding: 6px 12px;
+        border: 1px solid #ced4da !important;
         border-radius: 6px;
     }
 
     .select2-container--default .select2-selection--single .select2-selection__rendered {
-        line-height: 24px;
+        line-height: 34px;
     }
 
     .select2-container--default .select2-selection--single .select2-selection__arrow {
@@ -154,17 +160,11 @@
     }
 
     .select2-container .select2-selection--multiple {
-        height: 46px !important;
-        padding: 6px 12px;
+        min-height: 46px !important;
+        height: auto !important;
+        padding: 4px 12px;
+        border: 1px solid #ced4da !important;
         border-radius: 6px;
-    }
-
-    .select2-container--default .select2-selection--single .select2-selection__rendered {
-        line-height: 24px;
-    }
-
-    .select2-container--default .select2-selection--single .select2-selection__arrow {
-        height: 46px;
     }
 </style>
 
@@ -284,7 +284,7 @@
             <div class="modal-header">
                 <h5 id="modalTitle"></h5>
                 
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <i class="bi bi-x-lg" data-bs-dismiss="modal" style="cursor: pointer;"></i>
             </div>
 
             <div class="modal-body">
@@ -369,6 +369,43 @@
     </div>
 </div>
 
+<!-- Modal Create Customer -->
+<div class="modal fade" id="createCustomerModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Thêm mới Khách hàng</h5>
+                <i class="bi bi-x-lg" data-bs-dismiss="modal" style="cursor: pointer;"></i>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label>Họ tên</label>
+                    <input type="text" id="CusFullName" class="form-control" />
+                </div>
+                <div class="mb-3">
+                    <label>Số điện thoại</label>
+                    <input type="text" id="CusPhoneNumber" class="form-control" />
+                </div>
+                <div class="mb-3">
+                    <label>Email</label>
+                    <input type="email" id="CusEmail" class="form-control" />
+                </div>
+                <div class="mb-3">
+                    <label>CMND/CCCD</label>
+                    <input type="text" id="CusIdentityNumber" class="form-control" />
+                </div>
+                <div class="mb-3">
+                    <label>Địa chỉ</label>
+                    <input type="text" id="CusAddress" class="form-control" />
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button class="btn btn-primary" id="btnSaveCustomer">Lưu</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 <!-- JS -->
 @section Scripts {
@@ -430,6 +467,62 @@
                             }).then(() => location.reload());
                         }
                         else {
+                            Swal.fire("Lỗi", res.message, "error");
+                        }
+                    },
+                    error: function () {
+                        Swal.fire("Lỗi", "Có lỗi xảy ra", "error");
+                    }
+                });
+            });
+
+            // ===== SAVE NEW CUSTOMER =====
+            $("#btnSaveCustomer").on("click", function () {
+                var payload = {
+                    FullName: $("#CusFullName").val(),
+                    PhoneNumber: $("#CusPhoneNumber").val(),
+                    Email: $("#CusEmail").val(),
+                    IdentityNumber: $("#CusIdentityNumber").val(),
+                    Address: $("#CusAddress").val()
+                };
+
+                $.ajax({
+                    url: "/Admin/Customers/Create",
+                    type: "POST",
+                    contentType: "application/json",
+                    data: JSON.stringify(payload),
+                    success: function (res) {
+                        if (res.status === 200) {
+                            var addCustomerModal = bootstrap.Modal.getInstance(document.getElementById('createCustomerModal'));
+                            if (addCustomerModal) {
+                                addCustomerModal.hide();
+                            } else {
+                                $('#createCustomerModal').modal('hide');
+                            }
+                            
+                            Swal.fire({
+                                icon: "success",
+                                title: "Thành công!",
+                                text: "Đã thêm khách hàng mới"
+                            });
+                            
+                            // Reset form
+                            $("#CusFullName").val("");
+                            $("#CusPhoneNumber").val("");
+                            $("#CusEmail").val("");
+                            $("#CusIdentityNumber").val("");
+                            $("#CusAddress").val("");
+                            
+                            // Reload customers list
+                            loadCustomers();
+                            
+                            // Show booking modal again
+                            var bookingModal = bootstrap.Modal.getInstance(document.getElementById('bookingModal'));
+                            if (!bookingModal) {
+                                bookingModal = new bootstrap.Modal(document.getElementById('bookingModal'));
+                            }
+                            bookingModal.show();
+                        } else {
                             Swal.fire("Lỗi", res.message, "error");
                         }
                     },

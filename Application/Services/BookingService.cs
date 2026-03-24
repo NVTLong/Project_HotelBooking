@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using Project_HotelBooking.Application.DTOs.Booking;
 using Project_HotelBooking.Application.Interfaces.Repository;
 using Project_HotelBooking.Application.Interfaces.Service;
@@ -243,5 +243,23 @@ namespace Project_HotelBooking.Application.Services
             return total;
         }
 
+        public async Task<IEnumerable<BookingDto>> GetByCustomerIdAsync(int customerId)
+        {
+            var bookings = await _bookingRepository.GetByCustomerIdAsync(customerId);
+            return bookings.Select(x => new BookingDto
+            {
+                Id = x.Id,
+                BookingCode = x.BookingCode,
+                CustomerId = x.CustomerId,
+                CustomerName = x.Customer!.FullName,
+                CheckInDate = x.CheckInDate,
+                CheckOutDate = x.CheckOutDate,
+                TotalGuests = x.TotalGuests,
+                Status = x.Status,
+                TotalAmount = x.TotalAmount,
+                Note = x.Note,
+                RoomCount = x.BookingDetails != null ? x.BookingDetails.Count : 0
+            });
+        }
     }
 }

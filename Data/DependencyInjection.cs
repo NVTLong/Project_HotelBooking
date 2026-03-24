@@ -39,6 +39,7 @@ namespace Project_HotelBooking.Data
             services.AddScoped<IHotelServiceRepository, HotelServiceRepository>();
             services.AddScoped<IBookingHotelServiceRepository, BookingHotelServiceRepository>();
             services.AddScoped<IPaymentRepository, PaymentRepository>();
+            services.AddScoped<IRoomImageRepository, RoomImageRepository>();
 
             // Đăng ký Service
             services.AddScoped<IStaffService, StaffService>();

@@ -1,4 +1,4 @@
-﻿using Project_HotelBooking.Models;
+using Project_HotelBooking.Models;
 
 namespace Project_HotelBooking.Application.Interfaces.Repository
 {
@@ -10,5 +10,7 @@ namespace Project_HotelBooking.Application.Interfaces.Repository
         Task UpdateAsync (RoomType roomType);
         Task DeleteAsync (int id);
         Task SaveAsync();
+        Task<IEnumerable<RoomType>> GetAllWithRoomsAndBookingsAsync();
+        Task<RoomType?> GetByIdWithRoomsAndAmenitiesAsync(int id);
     }
 }

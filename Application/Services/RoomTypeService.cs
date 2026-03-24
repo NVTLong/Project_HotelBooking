@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using Humanizer;
 using Project_HotelBooking.Application.DTOs.RoomType;
 using Project_HotelBooking.Application.Interfaces.Repository;
@@ -65,6 +65,58 @@ namespace Project_HotelBooking.Application.Services
                 await _roomTypeRepository.DeleteAsync(id);
                 await _roomTypeRepository.SaveAsync();
             }
+        }
+
+        public async Task<IEnumerable<RoomTypeDto>> GetAvailableRoomTypesAsync(DateTime checkIn, DateTime checkOut, int guests)
+        {
+            var roomTypes = await _roomTypeRepository.GetAllWithRoomsAndBookingsAsync();
+
+            var availableRoomTypes = roomTypes
+                .Where(rt => rt.IsActive && rt.Capacity >= guests)
+                .Select(rt => {
+                    // đếm số phòng còn trống trong khoảng thời gian
+                    var availableRoomsCount = rt.Rooms!.Count(r => 
+                        r.IsActive && 
+                        !r.BookingDetails!.Any(bd => 
+                            bd.Booking!.Status != Enums.BookingStatus.Cancelled &&
+                            !(bd.Booking.CheckOutDate <= checkIn || bd.Booking.CheckInDate >= checkOut)
+                        )
+                    );
+
+                    if (availableRoomsCount > 0)
+                    {
+                        var dto = _mapper.Map<RoomTypeDto>(rt);
+                        // có thể thêm số lượng phòng trống vào DTO nếu cần
+                        return dto;
+                    }
+                    return null;
+                })
+                .Where(dto => dto != null)
+                .Cast<RoomTypeDto>()
+                .ToList();
+
+            return availableRoomTypes;
+        }
+
+        public async Task<RoomTypeDto?> GetDetailedRoomTypeAsync(int id)
+        {
+            var roomType = await _roomTypeRepository.GetByIdWithRoomsAndAmenitiesAsync(id);
+            if (roomType == null) return null;
+
+            var dto = _mapper.Map<RoomTypeDto>(roomType);
+            
+            // Lấy tất cả tiện ích duy nhất từ các phòng thuộc loại này
+            if (roomType.Rooms != null)
+            {
+                dto.Amenities = roomType.Rooms
+                    .SelectMany(r => r.RoomAmenities ?? new List<RoomAmenity>())
+                    .Where(ra => ra.Amenity != null)
+                    .Select(ra => ra.Amenity!.Name)
+                    .Distinct()
+                    .ToList();
+            }
+
+            return dto;
         }
     }
 }
