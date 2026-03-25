@@ -5,198 +5,45 @@
 @{
     ViewData["Title"] = "Index";
 }
-<style>
-    .action-icon {
-        font-size: 24px;
-        padding: 6px;
-        border-radius: 6px;
-        transition: 0.2s;
-    }
-
-        .action-icon:hover {
-            filter: brightness(70%);
-        }
-
-    /* IsActive*/
-    .switch {
-        position: relative;
-        display: inline-block;
-        width: 55px;
-        height: 28px;
-    }
-
-        .switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-
-    .slider {
-        position: absolute;
-        cursor: pointer;
-        inset: 0;
-        background-color: #ccc;
-        border-radius: 30px;
-        transition: 0.3s;
-    }
-
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 22px;
-            width: 22px;
-            left: 3px;
-            bottom: 3px;
-            background-color: white;
-            border-radius: 50%;
-            transition: 0.3s;
-        }
-
-    input:checked + .slider {
-        background-color: #7c3aed;
-    }
-
-        input:checked + .slider:before {
-            transform: translateX(26px);
-        }
-
-    /* CSS IsActive */
-    .status-active {
-        background-color: #e8f7ee;
-        color: #1e7e34;
-        border: 1px solid #28a745;
-        padding: 4px 10px;
-        border-radius: 20px;
-        font-size: 13px;
-        font-weight: 500;
-    }
-
-    .status-inactive {
-        background-color: #fdeaea;
-        color: #c82333;
-        border: 1px solid #dc3545;
-        padding: 4px 10px;
-        border-radius: 20px;
-        font-size: 13px;
-        font-weight: 500;
-    }
-
-    /* CSS Status */
-    .status-available {
-        background-color: #e8f7ee;
-        color: #1e7e34;
-        border: 1px solid #28a745;
-        padding: 4px 10px;
-        border-radius: 20px;
-        font-size: 13px;
-        font-weight: 500;
-    }
-
-    .status-occupied {
-        background-color: #fdeaea;
-        color: #c82333;
-        border: 1px solid #dc3545;
-        padding: 4px 10px;
-        border-radius: 20px;
-        font-size: 13px;
-        font-weight: 500;
-    }
-
-    .status-maintenance {
-        background-color: #fff8e1;
-        color: #856404;
-        border: 1px solid #ffc107;
-        padding: 4px 10px;
-        border-radius: 20px;
-        font-size: 13px;
-        font-weight: 500;
-    }
-
-    .status-cleaning {
-        background-color: #e7f6fb;
-        color: #0c5460;
-        border: 1px solid #17a2b8;
-        padding: 4px 10px;
-        border-radius: 20px;
-        font-size: 13px;
-        font-weight: 500;
-    }
-    /* SELECT2 & INPUT STANDARD */
-    .form-control {
-        border: 1px solid #ced4da !important;
-        cursor: text;
-    }
-
-    /* Fix Select2 height giống Bootstrap */
-    #customerModal .select2-container .select2-selection--single {
-        height: 46px !important;
-        padding: 6px 12px;
-        border: 1px solid #ced4da !important;
-        border-radius: 6px;
-    }
-
-    #customerModal .select2-container--default .select2-selection--single .select2-selection__rendered {
-        line-height: 34px;
-    }
-
-    #customerModal .select2-container--default .select2-selection--single .select2-selection__arrow {
-        height: 46px;
-    }
-
-    #customerModal .select2-container .select2-selection--multiple {
-        min-height: 46px !important;
-        height: auto !important;
-        padding: 4px 12px;
-        border: 1px solid #ced4da !important;
-        border-radius: 6px;
-    }
-</style>
-
-<button type="button" class="btn btn-primary me-2" id="btnAddNew">
-    <span class="svg-icon svg-icon svg-icon-1 svg_plus p-0"></span> Thêm mới
-</button>
-<div class="table-scroll mt-2">
-    <table class="table table-bordered">
-        <thead>
-            <tr class="text-center">
-                <th>Họ và tên</th>
-                <th>Số điện thoại</th>
-                <th>Email</th>
-                <th>Địa chỉ</th>
-                <th>CCCD/CMT</th>
-                <th>Hành động</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var item in Model)
-            {
-                <tr>
-                    <td class="text-center">@item.FullName</td>
-                    <td class="text-center">@item.PhoneNumber</td>
-                    <td class="text-center">@item.Email</td>
-                    <td class="text-center">@item.Address</td>
-                    <td class="text-center">@item.IdentityNumber</td>
-                
-                    <td class="text-center">
-
-                        <i class="bi bi-pencil-square fs-3 text-warning me-3 action-icon btn-edit"
-                           onclick="openEdit(@item.Id)"
-                           title="Edit"></i>
-
-                        @* <i class="bi bi-eye-fill fs-3 text-info me-3 action-icon btn-detail"
-                           data-id="@item.Id"
-                           title="Details"></i> *@
-
-                        <i class="bi bi-trash fs-3 text-danger action-icon btn-delete"
-                           data-id="@item.Id"
-                           title="Delete"></i>
-
-                    </td>
-                </tr>
-            }
-
-        </tbody>
-    </table>
+<div class="admin-page-header">
+    <h2 class="admin-page-title">Quản lý Khách hàng</h2>
+    <button type="button" class="btn btn-primary" id="btnAddNew">
+        <i class="bi bi-plus-lg me-2"></i> Thêm mới
+    </button>
+</div>
+<div class="card card-premium shadow-sm">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light">
+                    <tr>
+                        <th class="ps-4">Họ và tên</th>
+                        <th>Số điện thoại</th>
+                        <th>Email</th>
+                        <th>Địa chỉ</th>
+                        <th>CCCD/CMT</th>
+                        <th class="text-end pe-4">Hành động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td class="ps-4 fw-bold">@item.FullName</td>
+                            <td>@item.PhoneNumber</td>
+                            <td>@item.Email</td>
+                            <td>@item.Address</td>
+                            <td>@item.IdentityNumber</td>
+                            <td class="text-end pe-4">
+                                <i class="bi bi-pencil-square text-warning me-3 action-icon btn-edit" onclick="openEdit(@item.Id)" title="Sửa"></i>
+                                <i class="bi bi-trash text-danger action-icon btn-delete" data-id="@item.Id" title="Xóa"></i>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
 
 <!-- Modal -->

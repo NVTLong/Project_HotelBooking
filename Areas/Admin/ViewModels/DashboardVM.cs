@@ -10,8 +10,11 @@ namespace Project_HotelBooking.Areas.Admin.ViewModels
         public int TotalBookings { get; set; }
         public decimal TotalRevenue { get; set; }
         public int TotalCustomers { get; set; }
+        public int RoomsAvailable { get; set; }
+        public int ActiveServicesCount { get; set; }
         public List<Booking>? RecentBookings { get; set; }
         public Dictionary<RoomStatus, int>? RoomStatusStats { get; set; }
+        public Dictionary<int, int>? BookingsByMonth { get; set; }
 
         // Alerts
         public int TodayCheckInsCount { get; set; }

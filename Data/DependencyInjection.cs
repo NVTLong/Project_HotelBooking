@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Project_HotelBooking.Application.Interfaces.Repository;
 using Project_HotelBooking.Application.Interfaces.Service;
@@ -40,6 +40,7 @@ namespace Project_HotelBooking.Data
             services.AddScoped<IBookingHotelServiceRepository, BookingHotelServiceRepository>();
             services.AddScoped<IPaymentRepository, PaymentRepository>();
             services.AddScoped<IRoomImageRepository, RoomImageRepository>();
+            services.AddScoped<IPromotionRepository, PromotionRepository>();
 
             // Đăng ký Service
             services.AddScoped<IStaffService, StaffService>();
@@ -53,6 +54,7 @@ namespace Project_HotelBooking.Data
             services.AddScoped<IHotelServiceService, HotelServiceService>();
             services.AddScoped<IBookingHotelServiceService, BookingHotelServiceService>();
             services.AddScoped<IPaymentService, PaymentService>();
+            services.AddScoped<IPromotionService, PromotionService>();
 
             return services;
         }

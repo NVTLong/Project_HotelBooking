@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using Project_HotelBooking.Application.DTOs;
 using Project_HotelBooking.Application.DTOs.BookingHotelService;
 using Project_HotelBooking.Application.Interfaces.Repository;
@@ -68,17 +68,33 @@ public class BookingHotelServiceService : IBookingHotelServiceService
 
     }
 
-    // Lấy danh sách service
-    public async Task<List<BookingHotelServiceDetailDto>> GetByBookingDetailIdAsync(int bookingDetailId)
+    // Lấy chi tiết 1 service
+    public async Task<BookingHotelServiceDetailDto> GetByIdAsync(int id)
     {
-        var data = await _repository.GetByBookingDetailIdAsync(bookingDetailId);
+        var entity = await _repository.GetByIdAsync(id);
+        return _mapper.Map<BookingHotelServiceDetailDto>(entity);
+    }
 
-        return _mapper.Map<List<BookingHotelServiceDetailDto>>(data);
+    // Cập nhật số lượng
+    public async Task UpdateQuantityAsync(int id, int quantity)
+    {
+        var entity = await _repository.GetByIdAsync(id);
+        if (entity != null)
+        {
+            entity.Quantity = quantity;
+            entity.SubTotal = entity.Price * quantity;
+            await _repository.UpdateAsync(entity);
+        }
     }
 
     // Xóa service
     public async Task RemoveServiceAsync(int id)
     {
         await _repository.DeleteAsync(id);
+    }
+
+    public Task<List<BookingHotelServiceDetailDto>> GetByBookingDetailIdAsync(int bookingDetailId)
+    {
+        throw new NotImplementedException();
     }
 }

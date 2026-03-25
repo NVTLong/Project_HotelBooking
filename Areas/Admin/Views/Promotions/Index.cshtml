@@ -1,0 +1,223 @@
+@model IEnumerable<Project_HotelBooking.Application.DTOs.Promotion.PromotionDto>
+
+@{
+    ViewData["Title"] = "Quản lý Mã ưu đãi";
+}
+
+<div class="admin-page-header">
+    <h2 class="admin-page-title">Quản lý Mã ưu đãi</h2>
+    <button type="button" class="btn btn-primary" id="btnAddNew">
+        <i class="bi bi-plus-lg me-2"></i> Thêm mới
+    </button>
+</div>
+
+<div class="card card-premium shadow-sm">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light">
+                    <tr>
+                        <th class="ps-4">Mã ưu đãi</th>
+                        <th>Mức giảm</th>
+                        <th>Thời hạn</th>
+                        <th class="text-center">Trạng thái</th>
+                        <th class="text-end pe-4">Hành động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td class="ps-4 fw-bold text-primary font-monospace">@item.Code</td>
+                            <td>
+                                @if (item.IsPercentage)
+                                {
+                                    <span class="badge bg-info-subtle text-info border border-info-subtle rounded-pill px-3">@item.DiscountAmount%</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3">@item.DiscountAmount.ToString("N0") VNĐ</span>
+                                }
+                            </td>
+                            <td>
+                                <div class="small text-muted">Bắt đầu: @item.StartDate.ToString("dd/MM/yyyy")</div>
+                                <div class="small text-muted">Kết thúc: @item.EndDate.ToString("dd/MM/yyyy")</div>
+                            </td>
+                            <td class="text-center">
+                                @if (item.IsActive)
+                                {
+                                    <span class="status-badge badge-active">Đang áp dụng</span>
+                                }
+                                else
+                                {
+                                    <span class="status-badge badge-inactive">Tạm dừng</span>
+                                }
+                            </td>
+                            <td class="text-end pe-4">
+                                <i class="bi bi-pencil-square text-warning me-3 action-icon" onclick="openEdit(@item.Id)" title="Sửa"></i>
+                                <i class="bi bi-trash text-danger action-icon" onclick="deleteItem(@item.Id)" title="Xóa"></i>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="promotionModal" tabindex="-1" data-bs-backdrop="static" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalTitle">Tạo mã ưu đãi mới</h5>
+                <i class="bi bi-x-lg" data-bs-dismiss="modal" style="cursor: pointer;"></i>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="Id" name="Id" />
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label>Mã Code</label>
+                        <input type="text" id="Code" name="Code" class="form-control" placeholder="Ví dụ: SUMMER2024" />
+                    </div>
+                    <div class="col-md-6">
+                        <label>Hình thức giảm</label>
+                        <select id="IsPercentage" name="IsPercentage" class="form-select">
+                            <option value="true">Giảm theo %</option>
+                            <option value="false">Giảm theo tiền mặt (VNĐ)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-12">
+                        <label id="labelAmount">Mức giảm (%)</label>
+                        <input type="number" id="DiscountAmount" name="DiscountAmount" class="form-control" placeholder="10" />
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label>Ngày bắt đầu</label>
+                        <input type="date" id="StartDate" name="StartDate" class="form-control" />
+                    </div>
+                    <div class="col-md-6">
+                        <label>Ngày kết thúc</label>
+                        <input type="date" id="EndDate" name="EndDate" class="form-control" />
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label>Trạng thái</label>
+                    <div class="col-md-6">
+                            <label class="form-label d-block">Hoạt động</label>
+
+                            <label class="switch">
+                                <input type="checkbox"
+                                       id="IsActive"
+                                       name="IsActive"
+                                       value="true"
+                                       checked>
+                                <span class="slider round"></span>
+                            </label>
+
+                        </div>
+
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" id="btnSave" class="btn btn-primary">Lưu mã ưu đãi</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            $('#IsPercentage').on('change', function() {
+                const isPercentage = $(this).val() === 'true';
+                $('#labelAmount').text(isPercentage ? 'Mức giảm (%)' : 'Mức giảm (VNĐ)');
+            });
+
+            $("#btnAddNew").on("click", function () {
+                $("#Id").val(0);
+                $("#Code").val("");
+                $("#DiscountAmount").val("");
+                $("#IsPercentage").val("true").trigger('change');
+                $("#StartDate").val("");
+                $("#EndDate").val("");
+                $('#IsActive').prop('checked', true);
+                $("#modalTitle").text("Tạo mã ưu đãi mới");
+                new bootstrap.Modal(document.getElementById('promotionModal')).show();
+            });
+
+            $("#btnSave").on("click", function () {
+                var payload = {
+                    Id: Number($("#Id").val()),
+                    Code: $("#Code").val(),
+                    DiscountAmount: Number($("#DiscountAmount").val()),
+                    IsPercentage: $("#IsPercentage").val() === 'true',
+                    StartDate: $("#StartDate").val(),
+                    EndDate: $("#EndDate").val(),
+                    IsActive: $('#IsActive').prop('checked')
+                };
+
+                var isUpdate = payload.Id > 0;
+                $.ajax({
+                    url: isUpdate ? "/Admin/Promotions/Update" : "/Admin/Promotions/Create",
+                    type: isUpdate ? "PUT" : "POST",
+                    contentType: "application/json",
+                    data: JSON.stringify(payload),
+                    success: function (res) {
+                        if (res.status === 200) {
+                            Swal.fire("Thành công!", isUpdate ? "Đã cập nhật mã ưu đãi" : "Đã thêm mã ưu đãi mới", "success")
+                                .then(() => location.reload());
+                        } else {
+                            Swal.fire("Lỗi", res.message, "error");
+                        }
+                    },
+                    error: function () {
+                        Swal.fire("Lỗi", "Không thể kết nối đến máy chủ", "error");
+                    }
+                });
+            });
+        });
+
+        function openEdit(id) {
+            $.get("/Admin/Promotions/GetById/" + id, function (res) {
+                $("#Id").val(res.id);
+                $("#Code").val(res.code);
+                $("#DiscountAmount").val(res.discountAmount);
+                $("#IsPercentage").val(res.isPercentage.toString()).trigger('change');
+                $("#StartDate").val(res.startDate.split('T')[0]);
+                $("#EndDate").val(res.endDate.split('T')[0]);
+                $('#IsActive').prop('checked', res.isActive);
+                $("#modalTitle").text("Cập nhật mã ưu đãi");
+                new bootstrap.Modal(document.getElementById('promotionModal')).show();
+            });
+        }
+
+        function deleteItem(id) {
+            Swal.fire({
+                title: "Xác nhận xóa?",
+                text: "Mã ưu đãi này sẽ ngừng hoạt động ngay lập tức!",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#ef4444",
+                confirmButtonText: "Xóa mã",
+                cancelButtonText: "Hủy"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: "/Admin/Promotions/Delete/",
+                        type: "DELETE",
+                        data: { id: id },
+                        success: function () {
+                            Swal.fire("Đã xóa!", "Mã ưu đãi đã được loại bỏ.", "success").then(() => location.reload());
+                        }
+                    });
+                }
+            });
+        }
+    </script>
+}

@@ -13,17 +13,20 @@ namespace Project_HotelBooking.Areas.Admin.Controllers
         private readonly IBookingRepository _bookingRepository;
         private readonly ICustomerRepository _customerRepository;
         private readonly IPaymentRepository _paymentRepository;
+        private readonly IHotelServiceRepository _hotelServiceRepository;
 
         public DashboardController(
             IRoomRepository roomRepository,
             IBookingRepository bookingRepository,
             ICustomerRepository customerRepository,
-            IPaymentRepository paymentRepository)
+            IPaymentRepository paymentRepository,
+            IHotelServiceRepository hotelServiceRepository)
         {
             _roomRepository = roomRepository;
             _bookingRepository = bookingRepository;
             _customerRepository = customerRepository;
             _paymentRepository = paymentRepository;
+            _hotelServiceRepository = hotelServiceRepository;
         }
 
         public async Task<IActionResult> Index()
@@ -32,6 +35,7 @@ namespace Project_HotelBooking.Areas.Admin.Controllers
             var bookings = await _bookingRepository.GetAllAsync();
             var customers = await _customerRepository.GetAllAsync();
             var payments = await _paymentRepository.GetAllAsync();
+            var services = await _hotelServiceRepository.GetAllAsync();
 
             var today = DateTime.Today;
             var last7Days = Enumerable.Range(0, 7).Select(i => today.AddDays(-i)).Reverse().ToList();
@@ -40,17 +44,23 @@ namespace Project_HotelBooking.Areas.Admin.Controllers
             {
                 TotalRooms = rooms.Count(),
                 RoomsInUse = rooms.Count(r => r.Status == RoomStatus.Occupied),
+                RoomsAvailable = rooms.Count(r => r.Status == RoomStatus.Available),
+                ActiveServicesCount = services.Count(),
                 TotalBookings = bookings.Count(),
                 TotalCustomers = (int)customers.Count(),
                 TotalRevenue = payments.Sum(p => p.Amount),
                 RecentBookings = bookings.OrderByDescending(b => b.CreatedAt).Take(5).ToList(),
                 RoomStatusStats = rooms.GroupBy(r => r.Status)
                                        .ToDictionary(g => g.Key, g => g.Count()),
+                
+                BookingsByMonth = bookings.Where(b => b.CreatedAt.Year == DateTime.Now.Year)
+                                          .GroupBy(b => b.CreatedAt.Month)
+                                          .ToDictionary(g => g.Key, g => g.Count()),
 
                 // Alerts
                 TodayCheckInsCount = bookings.Count(b => b.CheckInDate.Date == today && b.Status != BookingStatus.Cancelled),
                 UnpaidBookingsCount = bookings.Count(b => b.Status == BookingStatus.Pending),
-                IsLowAvailability = (decimal)rooms.Count(r => r.Status == RoomStatus.Available) / rooms.Count() < 0.15m,
+                IsLowAvailability = rooms.Any() && (decimal)rooms.Count(r => r.Status == RoomStatus.Available) / rooms.Count() < 0.15m,
 
                 // Chart Data
                 ChartLabels = last7Days.Select(d => d.ToString("dd/MM")).ToList(),

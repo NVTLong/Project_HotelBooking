@@ -5,215 +5,62 @@
 @{
     ViewData["Title"] = "Index";
 }
-<style>
-    /* 1. RESTORE ACTION ICONS & STATUSES (TABLE) */
-    .action-icon {
-        font-size: 24px;
-        padding: 6px;
-        border-radius: 6px;
-        transition: 0.2s;
-        cursor: pointer;
-    }
-    .action-icon:hover { filter: brightness(70%); }
 
-    /* Status Badges */
-    .status-active, .status-available { background-color: #e8f7ee; color: #1e7e34; border: 1px solid #28a745; padding: 4px 10px; border-radius: 20px; font-size: 13px; font-weight: 500; }
-    .status-inactive, .status-occupied { background-color: #fdeaea; color: #c82333; border: 1px solid #dc3545; padding: 4px 10px; border-radius: 20px; font-size: 13px; font-weight: 500; }
-    .status-maintenance { background-color: #fff8e1; color: #856404; border: 1px solid #ffc107; padding: 4px 10px; border-radius: 20px; font-size: 13px; font-weight: 500; }
-    .status-reserved { background-color: #e7f1ff; color: #0d6efd; border: 1px solid #0d6efd; padding: 4px 10px; border-radius: 20px; font-size: 13px; font-weight: 500; }
-    .status-cleaning { background-color: #e7f6fb; color: #0c5460; border: 1px solid #17a2b8; padding: 4px 10px; border-radius: 20px; font-size: 13px; font-weight: 500; }
+<div class="admin-page-header">
+    <h2 class="admin-page-title">Quản lý Phòng</h2>
+    <button type="button" class="btn btn-primary" id="btnAddNew">
+        <i class="bi bi-plus-lg me-2"></i> Thêm mới
+    </button>
+</div>
 
-    /* 2. RESTORE SWITCH TOGGLE */
-    .switch { position: relative; display: inline-block; width: 55px; height: 28px; }
-    .switch input { opacity: 0; width: 0; height: 0; }
-    .slider { position: absolute; cursor: pointer; inset: 0; background-color: #ccc; border-radius: 30px; transition: 0.3s; }
-    .slider:before { position: absolute; content: ""; height: 22px; width: 22px; left: 3px; bottom: 3px; background-color: white; border-radius: 50%; transition: 0.3s; }
-    input:checked + .slider { background-color: #7c3aed; }
-    input:checked + .slider:before { transform: translateX(26px); }
-
-    /* 3. MODAL PREMIUM STYLES & ALIGNMENT FIX */
-    #roomModal .modal-content {
-        border: none;
-        border-radius: 24px;
-        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-        overflow: hidden;
-    }
-
-    #roomModal .modal-header {
-        background: var(--primary-navy, #0f172a);
-        color: #fff;
-        padding: 1.5rem 2rem;
-        border: none;
-    }
-
-    #roomModal .modal-title {
-        font-family: 'Playfair Display', serif;
-        font-weight: 700;
-        font-size: 1.5rem;
-    }
-
-    #roomModal .modal-body {
-        padding: 2rem;
-        background-color: #f8fafc;
-    }
-
-    #roomModal .modal-footer {
-        padding: 1.5rem 2rem;
-        border-top: 1px solid #e2e8f0;
-        background-color: #fff;
-    }
-
-    #roomModal label {
-        font-size: 0.75rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        color: #64748b;
-        margin-bottom: 0.5rem;
-        display: block; /* Ensure label is block for vertical alignment */
-    }
-
-    #roomModal .form-control {
-        height: 46px;
-        border-radius: 12px;
-        border: 1px solid #e2e8f0 !important;
-        padding: 0.75rem 1rem;
-        font-size: 0.95rem;
-        transition: all 0.2s;
-        background-color: #fff;
-        width: 100%;
-    }
-
-    #roomModal .form-control:focus {
-        border-color: #7c3aed !important;
-        box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.1);
-        outline: none;
-    }
-
-    /* SELECT2 ALIGNMENT FIX */
-    #roomModal .select2-container--default .select2-selection--single,
-    #roomModal .select2-container--default .select2-selection--multiple {
-        border: 1px solid #e2e8f0 !important;
-        border-radius: 12px !important;
-        min-height: 46px !important;
-        background-color: #fff !important;
-        display: flex;
-        align-items: center;
-    }
-
-    #roomModal .select2-container--default .select2-selection--single .select2-selection__rendered {
-        line-height: normal !important;
-        padding-left: 1rem !important;
-        padding-right: 2rem !important;
-        color: #1e293b !important;
-        width: 100%;
-    }
-
-    #roomModal .select2-container--default .select2-selection--single .select2-selection__arrow {
-        height: 44px !important;
-        right: 10px !important;
-        display: flex;
-        align-items: center;
-    }
-
-    #roomModal .select2-container--default.select2-container--focus .select2-selection--single,
-    #roomModal .select2-container--default.select2-container--focus .select2-selection--multiple {
-        border-color: #7c3aed !important;
-        box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.1) !important;
-    }
-
-    /* SELECT2 MULTI-SELECT CHOICE (TABS) SIZE */
-    #roomModal .select2-container--default .select2-selection--multiple .select2-selection__choice {
-        background-color: #f1f5f9 !important;
-        border: 1px solid #e2e8f0 !important;
-        border-radius: 8px !important;
-        padding: 4px 12px !important;
-        margin-top: 6px !important;
-        margin-bottom: 6px !important;
-        font-size: 0.9rem !important;
-        color: #1e293b !important;
-    }
-
-    #roomModal .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
-        color: #ef4444 !important;
-        margin-right: 8px !important;
-        border: none !important;
-        font-weight: bold !important;
-    }
-
-    #roomModal .select2-container--default .select2-selection--multiple .select2-selection__choice__remove:hover {
-        background: transparent !important;
-        color: #b91c1c !important;
-    }
-
-    #roomModal .btn-primary { background-color: #7c3aed; border: none; padding: 0.75rem 1.5rem; border-radius: 12px; font-weight: 600; transition: all 0.2s; }
-    #roomModal .btn-primary:hover { background-color: #6d28d9; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(124, 58, 237, 0.25); }
-    #roomModal .btn-secondary { background-color: #fff; color: #64748b; border: 1px solid #e2e8f0; padding: 0.75rem 1.5rem; border-radius: 12px; font-weight: 600; transition: all 0.2s; }
-    #roomModal .btn-secondary:hover { background-color: #f1f5f9; color: #1e293b; }
-
-    #imagePreview img { transition: transform 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-radius: 8px; border: 1px solid #ddd; }
-    #imagePreview img:hover { transform: scale(1.05); }
-</style>
-
-<button type="button" class="btn btn-primary me-2" id="btnAddNew">
-    <span class="svg-icon svg-icon svg-icon-1 svg_plus p-0"></span> Thêm mới
-</button>
-<div class="table-scroll mt-2">
-    <table class="table table-bordered">
-        <thead>
-            <tr class="text-center">
-                <th>Số phòng</th>
-                <th>Tầng</th>
-                <th>Loại phòng</th>
-                <th>Trạng thái</th>
-                <th>Tình trạng</th>
-                <th>Hành động</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var item in Model)
-            {
-                <tr>
-                    <td class="text-center">@item.RoomNumber</td>
-                    <td class="text-center">@item.FloorName</td>
-                    <td class="text-center">@item.RoomTypeName</td>
-                    <td class="text-center">
-                        <span class ="status status-@item.Status.ToString().ToLower()">
-                            @EnumHelper.GetDisplayName(item.Status)
-                        </span>
-                    </td>
-                    <td class="text-center">
-                        @if (item.IsActive)
-                        {
-                            <span class="status-active">Đang hoạt động</span>
-                        }
-                        else
-                        {
-                            <span class="status-inactive">Dừng hoạt động</span>
-                        }
-                    </td>
-
-
-                    <td class="text-center">
-
-                        <i class="bi bi-pencil-square fs-3 text-warning me-3 action-icon btn-edit"
-                           onclick="openEdit(@item.Id)"
-                           title="Edit"></i>
-
-                        @* <i class="bi bi-eye-fill fs-3 text-info me-3 action-icon btn-detail"
-                           data-id="@item.Id"
-                           title="Details"></i> *@
-
-                        <i class="bi bi-trash fs-3 text-danger action-icon btn-delete"
-                           data-id="@item.Id"
-                           title="Delete"></i>
-
-                    </td>
-                </tr>
-            }
-
-        </tbody>
-    </table>
+<div class="card card-premium shadow-sm mt-3">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light">
+                    <tr>
+                        <th class="ps-4">Số phòng</th>
+                        <th class="text-center">Tầng</th>
+                        <th class="text-center">Loại phòng</th>
+                        <th class="text-center">Trạng thái</th>
+                        <th class="text-center">Tình trạng</th>
+                        <th class="text-end pe-4">Hành động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td class="ps-4 fw-bold">@item.RoomNumber</td>
+                            <td class="text-center text-muted">@item.FloorName</td>
+                            <td class="text-center">
+                                <span class="badge bg-light text-dark rounded-pill px-3">@item.RoomTypeName</span>
+                            </td>
+                            <td class="text-center">
+                                <span class ="status-badge status-@item.Status.ToString().ToLower()">
+                                    @EnumHelper.GetDisplayName(item.Status)
+                                </span>
+                            </td>
+                            <td class="text-center">
+                                @if (item.IsActive)
+                                {
+                                    <span class="status-badge badge-active">Đang hoạt động</span>
+                                }
+                                else
+                                {
+                                    <span class="status-badge badge-inactive">Dừng hoạt động</span>
+                                }
+                            </td>
+                            <td class="text-end pe-4">
+                                <i class="bi bi-pencil-square text-warning me-3 action-icon btn-edit" onclick="openEdit(@item.Id)" title="Edit"></i>
+                                <i class="bi bi-trash text-danger action-icon btn-delete" data-id="@item.Id" title="Delete"></i>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
 
 <!-- Modal -->

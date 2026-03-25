@@ -20,7 +20,7 @@
             --primary-navy: #0f172a;
             --accent-gold: #fbbf24;
             --soft-white: #f8fafc;
-            --text-muted: #64748b;
+            --text-muted: #f8fafc;
         }
 
         body {
@@ -97,38 +97,142 @@
 
         /* Footer */
         footer {
-            background: var(--primary-navy);
+            background: linear-gradient(180deg, #0f172a 0%, #020617 100%);
             color: #ccc;
             padding: 5rem 0 2rem;
             font-size: 0.9rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        footer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(251, 191, 36, 0.3), transparent);
         }
 
         footer h5 {
             color: #fff;
             margin-bottom: 1.5rem;
-            font-size: 1.2rem;
+            font-size: 1.25rem;
+            font-family: 'Playfair Display', serif;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        footer .footer-link {
+            color: #cbd5e1;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            display: inline-block;
+            margin-bottom: 0.75rem;
+            position: relative;
+        }
+
+        footer .footer-link:hover {
+            color: var(--accent-gold);
+            transform: translateX(5px);
         }
 
         footer hr {
-            border-color: rgba(255,255,255,0.1);
+            border-color: rgba(255, 255, 255, 0.05);
+            margin: 3rem 0 2rem;
+        }
+
+        .newsletter-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 3rem;
+            margin-bottom: 4rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .newsletter-input {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #fff;
+            padding: 0.8rem 1.5rem;
+            border-radius: 50px;
+            transition: all 0.3s;
+        }
+
+        .newsletter-input:focus {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--accent-gold);
+            box-shadow: 0 0 15px rgba(251, 191, 36, 0.2);
+            color: #fff;
+            outline: none;
+        }
+
+        .newsletter-input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .newsletter-btn {
+            background: var(--accent-gold);
+            color: var(--primary-navy);
+            border: none;
+            padding: 0.8rem 2rem;
+            border-radius: 50px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .newsletter-btn:hover {
+            background: #fff;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(251, 191, 36, 0.3);
         }
 
         .social-link {
-            width: 40px;
-            height: 40px;
+            width: 45px;
+            height: 45px;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            border: 1px solid rgba(255,255,255,0.2);
-            margin-right: 0.5rem;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            margin-right: 0.75rem;
             color: #fff;
-            transition: 0.3s;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            font-size: 1.2rem;
         }
 
         .social-link:hover {
             background: var(--accent-gold);
             border-color: var(--accent-gold);
             color: var(--primary-navy);
+            transform: translateY(-5px) rotate(360deg);
+            box-shadow: 0 10px 20px rgba(251, 191, 36, 0.3);
+        }
+
+        .contact-info-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 1.2rem;
+            color: #cbd5e1;
+        }
+
+        .contact-info-item i {
+            color: var(--accent-gold);
+            font-size: 1.1rem;
+            margin-right: 1rem;
+            margin-top: 0.2rem;
+        }
+
+        footer .text-muted {
+            color: #cbd5e1 !important;
+        }
+
+        footer .text-white {
+            color: #fff !important;
         }
 
         /* User Dropdown Profile */
@@ -274,44 +378,90 @@
     </main>
 
     <footer id="contact">
-        <div class="container text-center text-md-start">
-            <div class="row">
-                <div class="col-md-4 mb-4">
-                    <h5 class="navbar-brand m-0 mb-3">LUXURY HOTEL</h5>
-                    <p>Khám phá sự giao thoa hoàn hảo giữa thiết kế hiện đại và sự hiếu khách đẳng cấp thế giới. Mỗi khoảnh khắc tại đây là một trải nghiệm không thể quên.</p>
-                    <div class="mt-3">
-                        <a href="#" class="social-link"><i class="bi bi-facebook"></i></a>
-                        <a href="#" class="social-link"><i class="bi bi-instagram"></i></a>
-                        <a href="#" class="social-link"><i class="bi bi-twitter-x"></i></a>
+        <div class="container">
+            <!-- Newsletter Section -->
+            <div class="row justify-content-center">
+                <div class="col-lg-10">
+                    <div class="newsletter-card text-center">
+                        <h2 class="Playfair mb-3 text-white">Nhận Ưu Đãi Đặc Biệt</h2>
+                        <p class="text-muted mb-4 mx-auto" style="max-width: 600px;">Đăng ký nhận bản tin của chúng tôi để không bỏ lỡ những khuyến mãi hấp dẫn nhất dành riêng cho bạn.</p>
+                        <form class="row g-3 justify-content-center mt-2">
+                            <div class="col-md-6">
+                                <input type="email" class="form-control newsletter-input" placeholder="Nhập địa chỉ email của bạn...">
+                            </div>
+                            <div class="col-md-auto">
+                                <button type="submit" class="btn newsletter-btn px-5">ĐĂNG KÝ NGAY</button>
+                            </div>
+                        </form>
                     </div>
                 </div>
-                <div class="col-md-2 mb-4">
-                    <h5 id="offers">Liên kết</h5>
+            </div>
+
+            <div class="row text-center text-md-start">
+                <div class="col-lg-4 col-md-6 mb-5 mb-lg-0">
+                    <a class="navbar-brand text-white d-block mb-4" href="#">
+                        LUXURY <span style="color: var(--accent-gold)">HOTEL</span>
+                    </a>
+                    <p class="text-muted pe-md-4 mb-4" style="line-height: 1.8;">Khám phá sự giao thoa hoàn hảo giữa thiết kế hiện đại và sự hiếu khách đẳng cấp thế giới. Mỗi khoảnh khắc tại đây là một trải nghiệm không thể quên, nơi phong cách gặp gỡ sự thoải mái tuyệt đối.</p>
+                    <div class="d-flex justify-content-center justify-content-md-start">
+                        <a href="#" class="social-link" title="Facebook"><i class="bi bi-facebook"></i></a>
+                        <a href="#" class="social-link" title="Instagram"><i class="bi bi-instagram"></i></a>
+                        <a href="#" class="social-link" title="Twitter"><i class="bi bi-twitter-x"></i></a>
+                        <a href="#" class="social-link" title="LinkedIn"><i class="bi bi-linkedin"></i></a>
+                    </div>
+                </div>
+                
+                <div class="col-lg-2 col-6 mb-5 mb-lg-0">
+                    <h5>Liên Kết</h5>
                     <ul class="list-unstyled">
-                        <li class="mb-2"><a href="#" class="text-decoration-none text-muted">Về chúng tôi</a></li>
-                        <li class="mb-2"><a href="#" class="text-decoration-none text-muted">Dịch vụ</a></li>
-                        <li class="mb-2"><a href="#" class="text-decoration-none text-muted">Blog du lịch</a></li>
-                        <li class="mb-2"><a href="#" class="text-decoration-none text-muted">Ưu đãi</a></li>
+                        <li><a href="#" class="footer-link">Về chúng tôi</a></li>
+                        <li><a href="#" class="footer-link">Dịch vụ</a></li>
+                        <li><a href="#" class="footer-link">Phòng & Giá</a></li>
+                        <li><a href="#" class="footer-link">Blog du lịch</a></li>
+                        <li><a href="#" class="footer-link">Ưu đãi</a></li>
                     </ul>
                 </div>
-                <div class="col-md-2 mb-4">
-                    <h5>Hỗ trợ</h5>
+                
+                <div class="col-lg-2 col-6 mb-5 mb-lg-0">
+                    <h5>Hỗ Trợ</h5>
                     <ul class="list-unstyled">
-                        <li class="mb-2"><a href="#" class="text-decoration-none text-muted">Hỏi đáp (FAQ)</a></li>
-                        <li class="mb-2"><a href="#" class="text-decoration-none text-muted">Chính sách bảo mật</a></li>
-                        <li class="mb-2"><a href="#" class="text-decoration-none text-muted">Điều khoản sử dụng</a></li>
+                        <li><a href="#" class="footer-link">Hỏi đáp (FAQ)</a></li>
+                        <li><a href="#" class="footer-link">Trung tâm hỗ trợ</a></li>
+                        <li><a href="#" class="footer-link">Chính sách bảo mật</a></li>
+                        <li><a href="#" class="footer-link">Điều khoản sử dụng</a></li>
                     </ul>
                 </div>
-                <div class="col-md-4 mb-4">
-                    <h5>Liên hệ</h5>
-                    <p class="mb-2 text-muted"><i class="bi bi-geo-alt me-2"></i> 123 Đường Ven Biển, Đà Nẵng, Việt Nam</p>
-                    <p class="mb-2 text-muted"><i class="bi bi-telephone me-2"></i> +84 123 456 789</p>
-                    <p class="mb-2 text-muted"><i class="bi bi-envelope me-2"></i> contact@luxuryhotel.com</p>
+                
+                <div class="col-lg-4 col-md-6">
+                    <h5>Liên Hệ</h5>
+                    <div class="contact-info-item">
+                        <i class="bi bi-geo-alt"></i>
+                        <span>123 Đường Ven Biển, Quận Ngũ Hành Sơn, Đà Nẵng, Việt Nam</span>
+                    </div>
+                    <div class="contact-info-item">
+                        <i class="bi bi-telephone"></i>
+                        <span>+84 123 456 789</span>
+                    </div>
+                    <div class="contact-info-item">
+                        <i class="bi bi-envelope"></i>
+                        <span>contact@luxuryhotel.com</span>
+                    </div>
+                    <div class="contact-info-item">
+                        <i class="bi bi-clock"></i>
+                        <span>Phục vụ 24/7</span>
+                    </div>
                 </div>
             </div>
+            
             <hr>
-            <div class="text-center pt-3">
-                <small class="text-muted">&copy; 2026 - Luxury Hotel. Desinged with <i class="bi bi-heart-fill text-danger"></i></small>
+            
+            <div class="row align-items-center py-3">
+                <div class="col-md-6 text-center text-md-start mb-3 mb-md-0">
+                    <span class="text-muted">&copy; 2026 <strong>Luxury Hotel</strong>. All rights reserved.</span>
+                </div>
+                <div class="col-md-6 text-center text-md-end">
+                    <small class="text-muted">Designed with <i class="bi bi-heart-fill text-danger mx-1"></i> by <strong>NVTLong</strong></small>
+                </div>
             </div>
         </div>
     </footer>
